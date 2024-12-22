@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "rest-trainings-api"
+version = "0.1.0"
+description = ""
+authors = ["AlexandrSmolyachkovGH <alexandr.smolyachkov@gmail.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.115.6"
+asyncpg = "^0.30.0"
+uvicorn = "^0.34.0"
+psycopg2-binary = "^2.9.10"
+psycopg2 = "^2.9.10"
+python-dotenv = "^1.0.1"
+yoyo-migrations = "^9.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
