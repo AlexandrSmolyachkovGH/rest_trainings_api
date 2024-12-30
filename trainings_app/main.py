@@ -4,7 +4,7 @@ from trainings_app.routers import r_users, r_сlients
 
 app = FastAPI()
 
-app.include_router(router=r_users)
+app.include_router(router=r_users.router)
 
 if __name__ == "__main__":
     uvicorn.run("trainings_app.main:app")
