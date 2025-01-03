@@ -2,8 +2,8 @@ from yoyo import read_migrations, get_backend
 from trainings_app.settings import settings
 from pathlib import Path
 
+MIGRATIONS_PATH = Path("migrations").resolve()
 
-MIGRATIONS_PATH = Path("D:/fastapi_projects/rest_trainings_api/migrations").resolve()
 
 def migrate():
     print(f'[migration] -- APPLY MIGRATION [{settings.postgres_dsn}] --')

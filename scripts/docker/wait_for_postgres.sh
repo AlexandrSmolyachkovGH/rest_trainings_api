@@ -4,5 +4,5 @@ while ! nc -z ${POSTGRES_HOST} ${POSTGRES_PORT};
 do
   echo "[ wait_for_postgres.sh ] - wait for postgres...";
   sleep 1;
-done;
-echo "[ wait_for_postgres.sh ] - CONNECTED";
+done
+echo "[ wait_for_postgres.sh ] - CONNECTED"
