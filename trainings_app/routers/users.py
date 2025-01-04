@@ -1,30 +1,25 @@
-from fastapi import APIRouter, HTTPException
-from trainings_app.schemas import users as u
+from fastapi import APIRouter, HTTPException, Depends
+from trainings_app.schemas.users import GetUser, CreateUser, UpdateUserPut, UpdateUserPatch
 from trainings_app.db.connection import get_db
+from trainings_app.repositories.user_repository import UserRepository
 
 router = APIRouter(prefix='/users', tags=['user'])
 
 
-@router.post('/')
-async def create_user(user: u.CreateUser) -> int:
-    conn = get_db()
-    query = """
-            INSERT INTO users (username, password_hash, email, role, created_at, last_login, deleted_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
-            RETURNING id
-        """
-    user_params = (
-        user.username,
-        user.password_hash,
-        user.email,
-        user.role,
-        user.created_at,
-        user.last_login,
-        user.deleted_at
-    )
-    new_user_id = await conn.fetchval(query, *user_params)
-
-    return new_user_id
+@router.post('/', response_model=GetUser)
+async def create_user(user: CreateUser, db=Depends(get_db)) -> GetUser:
+    """
+    Create new user.
+    Returns a model of created user.
+    """
+    try:
+        user_repo = UserRepository(db)
+        created_user = await user_repo.create_user(user)
+        return created_user
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred. Additional info: {e}")
 
 
 @router.get('/{user_id}', response_model=u.GetUser)
