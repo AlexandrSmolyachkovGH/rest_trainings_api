@@ -13,20 +13,33 @@ DB_CONFIG = {
     "port": os.getenv("POSTGRES_PORT"),
 }
 
-
 EXTRA_CONFIG = {
     "max_size": 10,
     "min_size": 1
 }
-print("DB_CONFIG:", DB_CONFIG)
+
+pool = None
+
 
 async def connect_to_db():
-    return await asyncpg.create_pool(**DB_CONFIG, **EXTRA_CONFIG)
+    global pool
+    if pool is None:
+        pool = await asyncpg.create_pool(**DB_CONFIG, **EXTRA_CONFIG)
+        print("DB: Created the pool")
+
+
+async def close_db():
+    global pool
+    if pool:
+        await pool.close()
+        pool = None
+        print("DB: Closed the pool")
 
 
 @asynccontextmanager
 async def get_db():
-    pool = await connect_to_db()
+    global pool
+    if pool is None:
+        raise RuntimeError("DB: No active pool")
     async with pool.acquire() as conn:
         yield conn
-    await pool.close()

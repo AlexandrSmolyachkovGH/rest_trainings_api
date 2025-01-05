@@ -7,14 +7,11 @@ router = APIRouter(prefix='/users', tags=['user'])
 
 
 @router.post('/', response_model=GetUser)
-async def create_user(user: CreateUser, db=Depends(get_db)) -> GetUser:
-    """
-    Create new user.
-    Returns a model of created user.
-    """
+async def r_create_user(user: CreateUser, db=Depends(get_db)) -> GetUser:
     try:
+        user_dict = user.dict()
         user_repo = UserRepository(db)
-        created_user = await user_repo.create_user(user)
+        created_user = await user_repo.create_user(user_dict)
         return created_user
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -22,48 +19,85 @@ async def create_user(user: CreateUser, db=Depends(get_db)) -> GetUser:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred. Additional info: {e}")
 
 
-@router.get('/{user_id}', response_model=u.GetUser)
-async def get_all_users(user_id: int) -> u.GetUser:
-    conn = get_db()
-    query = 'SELECT * FROM users WHERE id = $1'
-    user_record = await conn.fetchrow(query, user_id)
-    if not user_record:
-        return HTTPException(status_code=404, detail='User not found')
-    user = u.GetUser(
-        id=user_record['id'],
-        username=user_record['username'],
-        password_hash=user_record['password_hash'],
-        email=user_record['email'],
-        role=user_record['role'],
-        created_at=user_record['created_at'],
-        last_login=user_record['last_login'],
-    )
-    return user
+@router.get('/', response_model=list[GetUser])
+async def r_get_active_users(db=Depends(get_db)) -> list[GetUser]:
+    try:
+        user_repo = UserRepository(db)
+        users = await user_repo.get_active_users()
+        return users
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred. Additional info: {e}")
 
 
-@router.put('/{user_id}', response_model=u.GetUser)
-async def update_user(user_id: int, user: u.UpdateUser) -> u.GetUser:
-    conn = get_db()
-    query = 'SELECT * FROM users WHERE id = $1'
-    user_record = await conn.fetchrow(query, user_id)
-    if not user_record:
-        raise HTTPException(status_code=404, detail='User not found')
-    query_update = """
-            UPDATE users 
-            SET username = $1, password_hash = $2, email = $3, role = $4, last_login = $5 
-            WHERE id = $6
-            RETURNING id, username, password_hash, email, role, created_at, last_login
-        """
-    user_params = (
-        user.username,
-        user.password_hash,
-        user.email,
-        user.role,
-        user.last_login,
-        user_id
-    )
+@router.get('/deleted', response_model=list[GetUser])
+async def r_get_deleted_users(db=Depends(get_db)) -> list[GetUser]:
+    try:
+        user_repo = UserRepository(db)
+        users = await user_repo.get_deleted_users()
+        return users
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred. Additional info: {e}")
 
 
-@router.delete('/')
-async def delete_category():
-    pass
+@router.get('/user_id/{user_id}', response_model=GetUser)
+async def r_get_user_by_id(user_id: int, db=Depends(get_db)) -> GetUser:
+    try:
+        user_repo = UserRepository(db)
+        user = await user_repo.get_user_by_id(user_id)
+        return user
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred. Additional info: {e}")
+
+
+@router.get('/username/{username}', response_model=GetUser)
+async def r_get_user_by_username(username: str, db=Depends(get_db)) -> GetUser:
+    try:
+        user_repo = UserRepository(db)
+        user = await user_repo.get_user_by_username(username)
+        return user
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred. Additional info: {e}")
+
+
+@router.delete('/delete', response_model=GetUser)
+async def r_delete_user(user_attr: dict, db=Depends(get_db)) -> GetUser:
+    try:
+        user_repo = UserRepository(db)
+        user = await user_repo.delete_user(user_attr)
+        return user
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred. Additional info: {e}")
+
+
+@router.put('/{user_id}', response_model=GetUser)
+async def r_update_user_put(user_id: int, user: UpdateUserPut, db=Depends(get_db)) -> GetUser:
+    try:
+        user_repo = UserRepository(db)
+        user = await user_repo.update_user(user_id, user.dict())
+        return user
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred. Additional info: {e}")
+
+
+@router.patch('/{user_id}', response_model=GetUser)
+async def r_update_user_put(user_id: int, user: UpdateUserPatch, db=Depends(get_db)) -> GetUser:
+    try:
+        user_repo = UserRepository(db)
+        user = await user_repo.update_user(user_id, user.dict(exclude_unset=True))
+        return user
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred. Additional info: {e}")

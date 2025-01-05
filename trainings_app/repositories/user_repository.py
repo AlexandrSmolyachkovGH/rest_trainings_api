@@ -76,6 +76,16 @@ class UserRepository:
             raise ValueError(f"Invalid key '{attr_key}'. Allowed keys for delete operation: 'id', 'username', 'email'.")
         return self.get_user_from_record(user_record)
 
+    async def get_active_users(self) -> list[GetUser]:
+        query = """
+            SELECT id, username, password_hash, email, role, created_at, last_login, deleted_at
+            FROM users
+            WHERE deleted_at IS NULL;
+        """
+        active_users_records = await self.db.fetch(query)
+        active_users = [GetUser(**record) for record in active_users_records]
+        return active_users
+
     async def get_deleted_users(self) -> list[GetUser]:
         query = """
             SELECT id, username, password_hash, email, role, created_at, last_login, deleted_at

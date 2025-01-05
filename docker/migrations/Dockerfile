@@ -3,6 +3,7 @@ FROM python:3.10
 WORKDIR /trainings_app
 
 ENV PYTHONPATH="/trainings_app"
+ENV YOYO_LOGLEVEL=DEBUG
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     postgresql-client libpq-dev build-essential curl netcat-openbsd && \
