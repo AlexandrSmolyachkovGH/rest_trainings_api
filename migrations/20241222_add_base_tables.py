@@ -86,5 +86,18 @@ steps = [
         );
 
         -- Add other tables with IF NOT EXISTS similarly
+        
+        DO $$
+        DECLARE
+            tbl RECORD;
+        BEGIN
+            FOR tbl IN
+                SELECT tablename
+                FROM pg_tables
+                WHERE tablename LIKE 'yoyo_tmp_%'
+            LOOP
+                EXECUTE format('DROP TABLE IF EXISTS %I;', tbl.tablename);
+            END LOOP;
+        END $$;
     """)
 ]

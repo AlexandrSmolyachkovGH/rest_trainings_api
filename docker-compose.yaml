@@ -20,18 +20,15 @@ services:
       retries: 5
 
   migrations:
-    working_dir: /trainings_app
     build:
+      dockerfile: /docker/migrations/Dockerfile
       context: .
-      dockerfile: ./docker/migrations/Dockerfile
     depends_on:
       db:
         condition: service_healthy
     env_file:
       - .env
-    environment:
-      - PYTHONPATH=/trainings_app
-    entrypoint: "scripts/docker/migrate.sh"
+    command: ["sh", "/trainings_app/scripts/docker/migrate.sh"]
     volumes:
       - .:/trainings_app
     networks:
@@ -41,8 +38,8 @@ services:
   app:
     container_name: 'trainings_app'
     build:
+      dockerfile: /docker/app/Dockerfile
       context: .
-      dockerfile: ./docker/app/Dockerfile
     depends_on:
       - migrations
     env_file:
