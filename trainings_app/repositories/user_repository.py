@@ -1,27 +1,27 @@
 from datetime import datetime
-from trainings_app.schemas.users import CreateUser, GetUser, UpdateUserPut, UpdateUserPatch
-from typing import Any, Dict
+from trainings_app.schemas.users import CreateUser, GetUser
+from typing import Union
+from trainings_app.repositories.base import BaseRepository
+from fastapi import HTTPException, status
 
 
-class UserRepository:
-    def __init__(self, db):
-        self.db = db
+class ConvertUserRecordError(ValueError):
+    pass
+
+
+class UserAttrError(ValueError):
+    pass
+
+
+class UserRepository(BaseRepository):
 
     @staticmethod
     def get_user_from_record(record: dict) -> GetUser:
         """Retrieve GetUser model from dict data"""
 
         if not record:
-            raise ValueError("No record found to convert to GetUser")
-        return GetUser(
-            id=record['id'],
-            username=record['username'],
-            password_hash=record['password_hash'],
-            email=record['email'],
-            role=record['role'],
-            created_at=record['created_at'],
-            last_login=record['last_login']
-        )
+            raise ConvertUserRecordError("No record found to convert to GetUser")
+        return GetUser(**record)
 
     @staticmethod
     def user_data_from_user(user: dict) -> tuple:
@@ -38,7 +38,30 @@ class UserRepository:
             indexes.append(counter)
         return keys, values, indexes
 
-    async def create_user(self, user: dict) -> GetUser:
+    @staticmethod
+    def check_user_attr(user_attr: dict):
+        """Check for the passed attribute"""
+
+        if not user_attr or len(user_attr) != 1 or not isinstance(user_attr, dict):
+            raise UserAttrError(f"The passed attr must be a dict with a length of exactly 1.")
+        attr_key, attr_value = next(iter(user_attr.items()))
+        if attr_key not in ('id', 'username', 'email'):
+            raise UserAttrError(
+                f"The key of passed attr must belong to one of the following: 'id', 'username', or 'email'."
+            )
+        return attr_key, attr_value
+
+    async def fetchrow_or_404(self, query: str, *args) -> dict:
+        """Check for data retrieval. If no data is found, raise a 404 error."""
+        record = await self.db.fetchrow(query, *args)
+        if not record:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Resource not found."
+            )
+        return record
+
+    async def create(self, user: CreateUser) -> GetUser:
         keys, values, indexes = self.user_data_from_user(user)
         query = f"""
                 INSERT INTO users ({', '.join(keys)})
@@ -48,35 +71,24 @@ class UserRepository:
         user_record = await self.db.fetchrow(query, *values)
         return self.get_user_from_record(user_record)
 
-    async def get_user_by_id(self, user_id: int) -> GetUser:
-        query = """SELECT * FROM users WHERE id = $1 AND deleted_at IS NULL;"""
-        user_record = await self.db.fetchrow(query, user_id)
+    async def get(self, user_attr: dict) -> GetUser:
+        attr_key, attr_value = self.check_user_attr(user_attr)
+        query = f"""SELECT * FROM users WHERE {attr_key} = $1 AND deleted_at IS NULL;"""
+        user_record = await self.db.fetchrow_or_404(query, attr_value)
         return self.get_user_from_record(user_record)
 
-    async def get_user_by_username(self, username: str) -> GetUser:
-        query = """SELECT * FROM users WHERE username = $1 AND deleted_at IS NULL;"""
-        user_record = await self.db.fetchrow(query, username)
+    async def delete(self, user_attr: dict) -> GetUser:
+        attr_key, attr_value = self.check_user_attr(user_attr)
+        query = f"""
+            UPDATE users
+            SET deleted_at = $1
+            WHERE {attr_key} = $2 AND deleted_at IS NULL
+            RETURNING *;
+        """
+        user_record = await self.db.fetchrow_or_404(query, datetime.now(), attr_value)
         return self.get_user_from_record(user_record)
 
-    async def delete_user(self, user_attr: dict) -> GetUser:
-        if not user_attr or len(user_attr) != 1:
-            raise ValueError(f"Invalid user_attr")
-        attr_key, attr_value = next(iter(user_attr.items()))
-        if attr_key in ('id', 'username', 'email'):
-            query = f"""
-                UPDATE users
-                SET deleted_at = $1
-                WHERE {attr_key} = $2 AND deleted_at IS NULL
-                RETURNING *;
-            """
-            user_record = await self.db.fetchrow(query, datetime.now(), attr_value)
-            if not user_record:
-                raise ValueError(f"User not found")
-        else:
-            raise ValueError(f"Invalid key '{attr_key}'. Allowed keys for delete operation: 'id', 'username', 'email'.")
-        return self.get_user_from_record(user_record)
-
-    async def get_active_users(self) -> list[GetUser]:
+    async def get_active_users(self) -> Union[list[GetUser], list]:
         query = """
             SELECT id, username, password_hash, email, role, created_at, last_login, deleted_at
             FROM users
@@ -86,7 +98,7 @@ class UserRepository:
         active_users = [GetUser(**record) for record in active_users_records]
         return active_users
 
-    async def get_deleted_users(self) -> list[GetUser]:
+    async def get_deleted_users(self) -> Union[list[GetUser], list]:
         query = """
             SELECT id, username, password_hash, email, role, created_at, last_login, deleted_at
             FROM users
@@ -96,7 +108,7 @@ class UserRepository:
         deleted_users = [GetUser(**record) for record in deleted_users_records]
         return deleted_users
 
-    async def update_user(self, user_id: int, user: dict) -> GetUser:
+    async def update(self, user_id: int, user: dict) -> GetUser:
         keys, values, indexes = self.user_data_from_user(user)
         set_clause = ", ".join([f"{key} = ${idx}" for key, idx in zip(keys, indexes)])
         query = f"""
@@ -106,7 +118,5 @@ class UserRepository:
             RETURNING *; 
         """
         values.append(user_id)
-        user_record = await self.db.fetchrow(query, *values)
-        if not user_record:
-            raise ValueError(f"User with id={user_id} not found or already deleted.")
+        user_record = await self.db.fetchrow_or_404(query, *values)
         return self.get_user_from_record(user_record)

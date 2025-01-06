@@ -21,7 +21,7 @@ services:
 
   migrations:
     build:
-      dockerfile: /docker/migrations/Dockerfile
+      dockerfile: docker/migrations/Dockerfile
       context: .
     depends_on:
       db:
@@ -38,7 +38,7 @@ services:
   app:
     container_name: 'trainings_app'
     build:
-      dockerfile: /docker/app/Dockerfile
+      dockerfile: docker/app/Dockerfile
       context: .
     depends_on:
       - migrations
@@ -48,7 +48,7 @@ services:
       - "8080:8000"
     command: >
       bash -c "
-      poetry install --no-dev &&
+      poetry install &&
       uvicorn trainings_app.main:app --host 0.0.0.0 --port 8000 --reload"
     volumes:
       - .:/trainings_app

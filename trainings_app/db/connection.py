@@ -2,6 +2,8 @@ import os
 import asyncpg
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
+from fastapi import Depends
+from trainings_app.repositories.base import BaseRepository
 
 load_dotenv()
 
@@ -18,28 +20,15 @@ EXTRA_CONFIG = {
     "min_size": 1
 }
 
-pool = None
+
+async def get_conn():
+    async with asyncpg.create_pool(**DB_CONFIG, **EXTRA_CONFIG) as pool:
+        async with pool.acquire() as conn:
+            yield conn
 
 
-async def connect_to_db():
-    global pool
-    if pool is None:
-        pool = await asyncpg.create_pool(**DB_CONFIG, **EXTRA_CONFIG)
-        print("DB: Created the pool")
+def get_repo(repo_type):
+    async def inner(db=Depends(get_conn)):
+        return repo_type(db)
 
-
-async def close_db():
-    global pool
-    if pool:
-        await pool.close()
-        pool = None
-        print("DB: Closed the pool")
-
-
-@asynccontextmanager
-async def get_db():
-    global pool
-    if pool is None:
-        raise RuntimeError("DB: No active pool")
-    async with pool.acquire() as conn:
-        yield conn
+    return inner
