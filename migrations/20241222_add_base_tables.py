@@ -75,6 +75,14 @@ steps = [
         END $$;"""),
 
     step("""
+        DO $$ BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'client_activity_status_enum') THEN
+                CREATE TYPE client_fitness_activity_status_enum AS ENUM(
+                    'ACTIVE', 'INACTIVE', 'ON_HOLD', 'CANCELLED', 'EXPIRED', 'UPCOMING');
+            END IF;
+        END $$;"""),
+
+    step("""
         CREATE TABLE IF NOT EXISTS Users (
             id SERIAL PRIMARY KEY,
             username VARCHAR(50) NOT NULL UNIQUE,
@@ -92,7 +100,22 @@ steps = [
             access_level access_level_enum DEFAULT 'STANDARD',
             description TEXT DEFAULT NULL,
             price NUMERIC(8, 2) NOT NULL
-        );
+        );"""),
 
-    """)
+    step("""
+        CREATE TABLE IF NOT EXISTS Clients(
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL UNIQUE REFERENCES Users(id) ON DELETE NO ACTION,
+            membership_id INTEGER NOT NULL REFERENCES Memberships(id) ON DELETE SET DEFAULT,
+            first_name VARCHAR(50) NOT NULL,
+            last_name VARCHAR(80) NOT NULL,
+            phone_number VARCHAR(20) NOT NULL,
+            gender gender_enum,
+            date_of_birth DATE NOT NULL,
+            weight_kg NUMERIC(5, 2) DEFAULT NULL,
+            height_cm NUMERIC(5, 2) DEFAULT NULL,
+            status client_activity_status_enum DEFAULT 'ACTIVE'
+        );""")
+
+
 ]

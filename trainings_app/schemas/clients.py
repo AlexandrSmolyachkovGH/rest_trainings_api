@@ -9,17 +9,22 @@ class GenderEnum(str, Enum):
     FEMALE = 'FEMALE'
 
 
+class ClientStatusEnum(str, Enum):
+    ACTIVE = 'ACTIVE'
+    INACTIVE = 'INACTIVE'
+    ON_HOLD = 'ON_HOLD'
+    CANCELLED = 'CANCELLED'
+    EXPIRED = 'EXPIRED'
+    UPCOMING = 'UPCOMING'
+
+
 class CreateClient(BaseModel):
     user_id: int = Field(ge=0, description='User ID associated with the client')
+    membership_id: int = Field(description='The ID of the membership associated with the client.', example=123)
     first_name: str = Field(min_length=2, max_length=50, description='The first name of the client', example='John')
     last_name: str = Field(min_length=2, max_length=80, description='The last name of the client', example='Doe')
-    # Also in the user model
-    email: Optional[EmailStr] = Field(description='A valid email address', example='john.doe@example.com')
     phone_number: str = Field(min_length=5, max_length=20, description='A phone number of the client',
                               example='+1234567890')
-    # Also in the user model
-    register_date: datetime = Field(default_factory=datetime.now, description='Date of the registration',
-                                    example="2024-12-25 00:00:00")
     gender: GenderEnum = Field(description="Gender of client in ['MALE', 'FEMALE'].", example='MALE')
     date_of_birth: date = Field(description="Date of client birth", example="2024-12-25")
     weight_kg: Optional[float] = Field(default=None, ge=0, le=500,
@@ -28,7 +33,9 @@ class CreateClient(BaseModel):
     height_cm: Optional[float] = Field(default=None, ge=0, le=500,
                                        description='The height of the client in centimeters (up to 2 decimal places)',
                                        example=175.2)
-    membership_id: int = Field(description='The ID of the membership associated with the client.', example=123)
+    status: ClientStatusEnum = Field(default=ClientStatusEnum.ACTIVE,
+                                     description="Client activity status",
+                                     example='INACTIVE')
 
 
 class GetClient(CreateClient):

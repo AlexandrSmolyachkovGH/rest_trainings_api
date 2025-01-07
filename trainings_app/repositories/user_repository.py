@@ -74,7 +74,7 @@ class UserRepository(BaseRepository):
     async def get(self, user_attr: dict) -> GetUser:
         attr_key, attr_value = self.check_user_attr(user_attr)
         query = f"""SELECT * FROM users WHERE {attr_key} = $1 AND deleted_at IS NULL;"""
-        user_record = await self.db.fetchrow_or_404(query, attr_value)
+        user_record = await self.fetchrow_or_404(query, attr_value)
         return self.get_user_from_record(user_record)
 
     async def delete(self, user_attr: dict) -> GetUser:
@@ -85,7 +85,7 @@ class UserRepository(BaseRepository):
             WHERE {attr_key} = $2 AND deleted_at IS NULL
             RETURNING *;
         """
-        user_record = await self.db.fetchrow_or_404(query, datetime.now(), attr_value)
+        user_record = await self.fetchrow_or_404(query, datetime.now(), attr_value)
         return self.get_user_from_record(user_record)
 
     async def get_active_users(self) -> Union[list[GetUser], list]:
@@ -118,5 +118,5 @@ class UserRepository(BaseRepository):
             RETURNING *; 
         """
         values.append(user_id)
-        user_record = await self.db.fetchrow_or_404(query, *values)
+        user_record = await self.fetchrow_or_404(query, *values)
         return self.get_user_from_record(user_record)
