@@ -1,45 +1,65 @@
-from fastapi import APIRouter, Depends, Path, Query
+from typing import Annotated, Optional, Literal
+from fastapi import APIRouter, Depends, Path, Query, HTTPException, status
+
 from trainings_app.schemas.users import GetUser, CreateUser, UpdateUserPut, UpdateUserPatch
 from trainings_app.db.connection import get_repo
 from trainings_app.repositories.user_repository import UserRepository
-from typing import Annotated
+from trainings_app.exceptions.user import UserNotFoundError
 
 router = APIRouter(prefix='/users', tags=['user'])
 
 
-@router.get('/', response_model=list[GetUser])
-async def get_users(user_repo=Depends(get_repo(UserRepository))) -> list[GetUser]:
-    users = await user_repo.get_active_users()
+@router.get('/',
+            response_model=list[GetUser],
+            description="Retrieve list of users")
+async def get_users(user_status: Annotated[
+                    Optional[Literal["active", "deleted"]],
+                    Query(description="Filter by user status")] = None,
+                    user_repo=Depends(get_repo(UserRepository))) -> list[GetUser]:
+    users = await user_repo.get_users(user_status)
     return users
 
 
-@router.get('/id', response_model=GetUser)
-async def get_user_by_id(user_id: Annotated[int, Query(gt=0)], user_repo=Depends(get_repo(UserRepository))) -> GetUser:
-    user_attr = {'id': user_id}
-    user = await user_repo.get(user_attr)
-    return user
+@router.get('/{user_id}',
+            response_model=GetUser,
+            description="Retrieve the user by ID")
+async def get_user_by_id(user_id: Annotated[int, Path(gt=0)],
+                         user_repo=Depends(get_repo(UserRepository))) -> GetUser:
+    try:
+        user_attr = {'id': user_id}
+        user = await user_repo.get(user_attr)
+        return user
+    except UserNotFoundError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"User with ID: {user_id} was not found.")
 
 
-@router.get('/username', response_model=GetUser)
-async def get_user_by_username(username: Annotated[str, Query(min_length=3, max_length=50)],
+@router.get('/{username}',
+            response_model=GetUser,
+            description="Retrieve the user by Username")
+async def get_user_by_username(username: Annotated[str, Path(min_length=3, max_length=50)],
                                user_repo=Depends(get_repo(UserRepository))) -> GetUser:
-    user_attr = {'username': username}
-    user = await user_repo.get(user_attr)
-    return user
+    try:
+        user_attr = {'username': username}
+        user = await user_repo.get(user_attr)
+        return user
+    except UserNotFoundError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"User with Username: {username} was not found.")
 
 
-@router.get('/email', response_model=GetUser)
-async def get_user_by_email(email: Annotated[str, Query(min_length=5, max_length=100)],
+@router.get('/{email}',
+            response_model=GetUser,
+            description="Retrieve the user by Email")
+async def get_user_by_email(email: Annotated[str, Path(min_length=5, max_length=100)],
                             user_repo=Depends(get_repo(UserRepository))) -> GetUser:
-    user_attr = {'email': email}
-    user = await user_repo.get(user_attr)
-    return user
-
-
-@router.get('/deleted', response_model=list[GetUser])
-async def get_deleted_users(user_repo=Depends(get_repo(UserRepository))) -> list[GetUser]:
-    users = await user_repo.get_deleted_users()
-    return users
+    try:
+        user_attr = {'email': email}
+        user = await user_repo.get(user_attr)
+        return user
+    except UserNotFoundError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"User with E-mail: {email} was not found.")
 
 
 @router.post('/', response_model=GetUser)

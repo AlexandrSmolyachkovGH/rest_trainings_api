@@ -1,16 +1,10 @@
-from datetime import datetime
-from trainings_app.schemas.users import CreateUser, GetUser
-from typing import Union
-from trainings_app.repositories.base import BaseRepository
 from fastapi import HTTPException, status
+from typing import Union
+from datetime import datetime
 
-
-class ConvertUserRecordError(ValueError):
-    pass
-
-
-class UserAttrError(ValueError):
-    pass
+from trainings_app.schemas.users import CreateUser, GetUser
+from trainings_app.repositories.base import BaseRepository
+from trainings_app.exceptions.user import ConvertUserRecordError, UserAttrError
 
 
 class UserRepository(BaseRepository):
@@ -88,25 +82,43 @@ class UserRepository(BaseRepository):
         user_record = await self.fetchrow_or_404(query, datetime.now(), attr_value)
         return self.get_user_from_record(user_record)
 
-    async def get_active_users(self) -> Union[list[GetUser], list]:
-        query = """
-            SELECT id, username, password_hash, email, role, created_at, last_login, deleted_at
-            FROM users
-            WHERE deleted_at IS NULL;
-        """
-        active_users_records = await self.db.fetch(query)
-        active_users = [GetUser(**record) for record in active_users_records]
-        return active_users
+    # async def get_active_users(self) -> Union[list[GetUser], list]:
+    #
+    #     query = """
+    #         SELECT id, username, password_hash, email, role, created_at, last_login, deleted_at
+    #         FROM users
+    #         WHERE deleted_at IS NULL;
+    #     """
+    #     active_users_records = await self.db.fetch(query)
+    #     active_users = [GetUser(**record) for record in active_users_records]
+    #     return active_users
 
-    async def get_deleted_users(self) -> Union[list[GetUser], list]:
-        query = """
-            SELECT id, username, password_hash, email, role, created_at, last_login, deleted_at
-            FROM users
-            WHERE deleted_at IS NOT NULL;
-        """
-        deleted_users_records = await self.db.fetch(query)
-        deleted_users = [GetUser(**record) for record in deleted_users_records]
-        return deleted_users
+    async def get_users(self, user_status: str | None = None) -> Union[list[GetUser], list]:
+        status_dct = {'active': 'IS NULL', 'deleted': 'IS NOT NULL'}
+        if user_status:
+            query = f"""
+                SELECT id, username, password_hash, email, role, created_at, last_login, deleted_at
+                FROM users
+                WHERE deleted_at {status_dct[user_status]};
+            """
+        else:
+            query = f"""
+                SELECT id, username, password_hash, email, role, created_at, last_login, deleted_at
+                FROM users;
+            """
+        user_records = await self.db.fetch(query)
+        users = [GetUser(**record) for record in user_records]
+        return users
+
+    # async def get_deleted_users(self) -> Union[list[GetUser], list]:
+    #     query = """
+    #         SELECT id, username, password_hash, email, role, created_at, last_login, deleted_at
+    #         FROM users
+    #         WHERE deleted_at IS NOT NULL;
+    #     """
+    #     deleted_users_records = await self.db.fetch(query)
+    #     deleted_users = [GetUser(**record) for record in deleted_users_records]
+    #     return deleted_users
 
     async def update(self, user_id: int, user: dict) -> GetUser:
         keys, values, indexes = self.user_data_from_user(user)
