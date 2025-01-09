@@ -1,4 +1,3 @@
-from fastapi import HTTPException, status
 from typing import Union
 from datetime import datetime
 
@@ -18,21 +17,6 @@ class UserRepository(BaseRepository):
         return GetUser(**record)
 
     @staticmethod
-    def user_data_from_user(user: dict) -> tuple:
-        """Returns tuple of user params for processing"""
-
-        keys = []
-        values = []
-        indexes = []
-        counter = 0
-        for k, v in user.items():
-            keys.append(k)
-            values.append(v)
-            counter += 1
-            indexes.append(counter)
-        return keys, values, indexes
-
-    @staticmethod
     def check_user_attr(user_attr: dict):
         """Check for the passed attribute"""
 
@@ -45,18 +29,8 @@ class UserRepository(BaseRepository):
             )
         return attr_key, attr_value
 
-    async def fetchrow_or_404(self, query: str, *args) -> dict:
-        """Check for data retrieval. If no data is found, raise a 404 error."""
-        record = await self.db.fetchrow(query, *args)
-        if not record:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Resource not found."
-            )
-        return record
-
     async def create(self, user: CreateUser) -> GetUser:
-        keys, values, indexes = self.user_data_from_user(user)
+        keys, values, indexes = self.data_from_dict(user)
         query = f"""
                 INSERT INTO users ({', '.join(keys)})
                 VALUES ({', '.join([f'${i}' for i in indexes])})
@@ -65,11 +39,19 @@ class UserRepository(BaseRepository):
         user_record = await self.db.fetchrow(query, *values)
         return self.get_user_from_record(user_record)
 
-    async def get(self, user_attr: dict) -> GetUser:
-        attr_key, attr_value = self.check_user_attr(user_attr)
-        query = f"""SELECT * FROM users WHERE {attr_key} = $1 AND deleted_at IS NULL;"""
-        user_record = await self.fetchrow_or_404(query, attr_value)
-        return self.get_user_from_record(user_record)
+    async def get(self, user_attrs: dict) -> GetUser:
+        keys, values, indexes = self.data_from_dict(user_attrs)
+        allowed_keys = ('id', 'username', 'email')
+        if all(key in allowed_keys for key in keys):
+            where_clause = " AND ".join([f"{key} = ${idx}" for key, idx in zip(keys, indexes)])
+            if not where_clause:
+                query = "SELECT * FROM users WHERE deleted_at IS NULL;"
+            else:
+                query = f"""SELECT * FROM users WHERE {where_clause} AND deleted_at IS NULL;"""
+            user_record = await self.fetchrow_or_404(query, *values)
+            return self.get_user_from_record(user_record)
+        else:
+            raise UserAttrError(f"Allowed keys for using in ('id', 'username', 'email').")
 
     async def delete(self, user_attr: dict) -> GetUser:
         attr_key, attr_value = self.check_user_attr(user_attr)
@@ -81,17 +63,6 @@ class UserRepository(BaseRepository):
         """
         user_record = await self.fetchrow_or_404(query, datetime.now(), attr_value)
         return self.get_user_from_record(user_record)
-
-    # async def get_active_users(self) -> Union[list[GetUser], list]:
-    #
-    #     query = """
-    #         SELECT id, username, password_hash, email, role, created_at, last_login, deleted_at
-    #         FROM users
-    #         WHERE deleted_at IS NULL;
-    #     """
-    #     active_users_records = await self.db.fetch(query)
-    #     active_users = [GetUser(**record) for record in active_users_records]
-    #     return active_users
 
     async def get_users(self, user_status: str | None = None) -> Union[list[GetUser], list]:
         status_dct = {'active': 'IS NULL', 'deleted': 'IS NOT NULL'}
@@ -110,18 +81,8 @@ class UserRepository(BaseRepository):
         users = [GetUser(**record) for record in user_records]
         return users
 
-    # async def get_deleted_users(self) -> Union[list[GetUser], list]:
-    #     query = """
-    #         SELECT id, username, password_hash, email, role, created_at, last_login, deleted_at
-    #         FROM users
-    #         WHERE deleted_at IS NOT NULL;
-    #     """
-    #     deleted_users_records = await self.db.fetch(query)
-    #     deleted_users = [GetUser(**record) for record in deleted_users_records]
-    #     return deleted_users
-
     async def update(self, user_id: int, user: dict) -> GetUser:
-        keys, values, indexes = self.user_data_from_user(user)
+        keys, values, indexes = self.data_from_dict(user)
         set_clause = ", ".join([f"{key} = ${idx}" for key, idx in zip(keys, indexes)])
         query = f"""
             UPDATE users
