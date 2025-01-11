@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Optional
 from datetime import datetime
 
 from trainings_app.schemas.users import CreateUser, GetUser
@@ -7,6 +7,8 @@ from trainings_app.exceptions.user import ConvertUserRecordError, UserAttrError
 
 
 class UserRepository(BaseRepository):
+    fields = ['id', 'username', 'password_hash', 'email', 'role', 'created_at', 'last_login', 'deleted_at']
+    fields_str = ', '.join([field for field in fields])
 
     @staticmethod
     def get_user_from_record(record: dict) -> GetUser:
@@ -39,19 +41,14 @@ class UserRepository(BaseRepository):
         user_record = await self.db.fetchrow(query, *values)
         return self.get_user_from_record(user_record)
 
-    async def get(self, user_attrs: dict) -> GetUser:
-        keys, values, indexes = self.data_from_dict(user_attrs)
-        allowed_keys = ('id', 'username', 'email')
-        if all(key in allowed_keys for key in keys):
-            where_clause = " AND ".join([f"{key} = ${idx}" for key, idx in zip(keys, indexes)])
-            if not where_clause:
-                query = "SELECT * FROM users WHERE deleted_at IS NULL;"
-            else:
-                query = f"""SELECT * FROM users WHERE {where_clause} AND deleted_at IS NULL;"""
-            user_record = await self.fetchrow_or_404(query, *values)
-            return self.get_user_from_record(user_record)
-        else:
-            raise UserAttrError(f"Allowed keys for using in ('id', 'username', 'email').")
+    async def get(self, user_id: int) -> GetUser:
+        query = f"""
+            SELECT {self.fields_str}
+            FROM users
+            WHERE id = $1;
+        """
+        user_record = await self.fetchrow_or_404(query, user_id)
+        return self.get_user_from_record(user_record)
 
     async def delete(self, user_attr: dict) -> GetUser:
         attr_key, attr_value = self.check_user_attr(user_attr)
@@ -64,20 +61,21 @@ class UserRepository(BaseRepository):
         user_record = await self.fetchrow_or_404(query, datetime.now(), attr_value)
         return self.get_user_from_record(user_record)
 
-    async def get_users(self, user_status: str | None = None) -> Union[list[GetUser], list]:
-        status_dct = {'active': 'IS NULL', 'deleted': 'IS NOT NULL'}
-        if user_status:
-            query = f"""
-                SELECT id, username, password_hash, email, role, created_at, last_login, deleted_at
-                FROM users
-                WHERE deleted_at {status_dct[user_status]};
+    async def get_users(self, filter_dict: Optional[dict]) -> Union[list[GetUser], list]:
+        val = []
+        query = f"""
+                    SELECT {self.fields_str}
+                    FROM users
+                """
+        if filter_dict:
+            keys, values, indexes = self.data_from_dict(filter_dict)
+            where_clause = ' AND '.join([f"{key} = ${ind}" for key, ind in zip(keys, indexes)])
+            query += f"""
+                WHERE {where_clause}
             """
-        else:
-            query = f"""
-                SELECT id, username, password_hash, email, role, created_at, last_login, deleted_at
-                FROM users;
-            """
-        user_records = await self.db.fetch(query)
+            val = values
+        query += ";"
+        user_records = await self.db.fetch(query, *val)
         users = [GetUser(**record) for record in user_records]
         return users
 

@@ -35,11 +35,11 @@ class GetUser(CreateUser):
     id: int = Field(ge=0, description="User ID", example=123)
 
 
-class UpdateUserPut(CreateUser):
+class PutUser(CreateUser):
     ...
 
 
-class UpdateUserPatch(BaseModel):
+class PatchUser(BaseModel):
     username: Optional[str] = Field(None, min_length=2, max_length=50, description='Unique valid username',
                                     example='john_doe_123')
     password_hash: Optional[str] = Field(None, min_length=2, max_length=255, description="Hashed password of the user",
@@ -53,3 +53,4 @@ class UpdateUserPatch(BaseModel):
                                            example='2024-12-25 00:00:00')
     deleted_at: Optional[datetime] = Field(None, description="Date of deletion of the user account.",
                                            example='2024-12-25 00:00:00')
+

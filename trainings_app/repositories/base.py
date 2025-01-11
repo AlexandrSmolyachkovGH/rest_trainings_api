@@ -17,7 +17,7 @@ class BaseRepository(abc.ABC):
 
     @staticmethod
     def data_from_dict(dct: dict) -> tuple:
-        """Returns tuple of params for processing"""
+        """Returns lists of params for processing"""
 
         keys = []
         values = []
@@ -29,6 +29,12 @@ class BaseRepository(abc.ABC):
             counter += 1
             indexes.append(counter)
         return keys, values, indexes
+
+    @staticmethod
+    def make_set_clause(keys: list, indexes: list) -> str:
+        """Construct the lists of keys and indexes into a string for the SET clause."""
+        set_clause = ", ".join([f"{key} = ${idx}" for key, idx in zip(keys, indexes)])
+        return set_clause
 
     @abc.abstractmethod
     async def get(self, *args, **kwargs):

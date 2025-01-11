@@ -77,7 +77,7 @@ steps = [
     step("""
         DO $$ BEGIN
             IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'client_activity_status_enum') THEN
-                CREATE TYPE client_fitness_activity_status_enum AS ENUM(
+                CREATE TYPE client_activity_status_enum AS ENUM(
                     'ACTIVE', 'INACTIVE', 'ON_HOLD', 'CANCELLED', 'EXPIRED', 'UPCOMING');
             END IF;
         END $$;"""),
@@ -115,7 +115,7 @@ steps = [
             weight_kg NUMERIC(5, 2) DEFAULT NULL,
             height_cm NUMERIC(5, 2) DEFAULT NULL,
             status client_activity_status_enum DEFAULT 'ACTIVE'
-        );""")
+        );"""),
 
 
 ]
