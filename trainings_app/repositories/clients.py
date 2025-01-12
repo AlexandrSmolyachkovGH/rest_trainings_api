@@ -84,3 +84,5 @@ class ClientRepository(BaseRepository):
         """
         updated_client = self.fetchrow_or_404(query, *values)
         return self.get_client_from_record(updated_client)
+
+

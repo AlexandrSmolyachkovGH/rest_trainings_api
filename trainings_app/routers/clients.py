@@ -1,8 +1,7 @@
-from datetime import date
-
 from fastapi import APIRouter, Depends, Path, Query
 from trainings_app.db.connection import get_repo
 from typing import Annotated, Optional
+
 from trainings_app.schemas.clients import GetClient, CreateClient, ClientStatusEnum, PutClient, PatchClient
 from trainings_app.repositories.clients import ClientRepository
 
