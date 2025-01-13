@@ -2,18 +2,6 @@ import abc
 from fastapi import HTTPException, status
 
 
-class BaseFields(abc.ABC):
-    @staticmethod
-    @abc.abstractmethod
-    def get_fields_list():
-        ...
-
-    @staticmethod
-    @abc.abstractmethod
-    def get_fields_str():
-        ...
-
-
 class BaseRepository(abc.ABC):
     def __init__(self, db):
         self.db = db

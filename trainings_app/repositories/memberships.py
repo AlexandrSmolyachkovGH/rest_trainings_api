@@ -1,5 +1,6 @@
 from typing import Optional
 
+from trainings_app.db.fields.memberships import MembershipFields
 from trainings_app.schemas.memberships import CreateMembership, GetMembership, AccessLevelEnum
 from trainings_app.repositories.base import BaseRepository
 from trainings_app.exceptions.memberships import MembershipsNotFoundError, MembershipsAttrError, \
@@ -7,8 +8,8 @@ from trainings_app.exceptions.memberships import MembershipsNotFoundError, Membe
 
 
 class MembershipRepository(BaseRepository):
-    columns = ['id', 'access_level', 'description', 'price']
-    str_columns = ', '.join(columns)
+    columns = MembershipFields.get_fields_list()
+    str_columns = MembershipFields.get_fields_str()
 
     @staticmethod
     def get_membership_from_record(record: dict) -> GetMembership:

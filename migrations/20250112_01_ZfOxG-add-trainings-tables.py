@@ -49,7 +49,7 @@ steps = [
             title VARCHAR(200) NOT NULL,
             description TEXT DEFAULT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            status train_status_enum DEFAULT 'ACTIVE'
+            status training_plan_status_enum DEFAULT 'ACTIVE'
         );"""),
 
     step("""

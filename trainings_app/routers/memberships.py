@@ -61,5 +61,6 @@ async def put_membership(membership_id: Annotated[int, Path(gt=0)],
 async def patch_membership(membership_id: Annotated[int, Path(gt=0)],
                            data_for_update: PatchMembership,
                            repo=Depends(get_repo(MembershipRepository))) -> GetMembership:
-    membership_data = await repo.update(membership_id, data_for_update.dict())
+    dict_for_update = data_for_update.model_dump(exclude_unset=True, exclude_defaults=True)
+    membership_data = await repo.update(membership_id, dict_for_update)
     return membership_data
