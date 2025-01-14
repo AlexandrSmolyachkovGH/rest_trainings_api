@@ -3,7 +3,6 @@ from typing import Annotated
 
 from trainings_app.db.connection import get_repo
 from trainings_app.schemas.trainings import CreateTraining, GetTraining, FilterTraining, PutTraining, PatchTraining
-from trainings_app.exceptions.trainings import TrainingsAttrError, TrainingNotFoundError, ConvertTrainingRecordError
 from trainings_app.repositories.trainings import TrainingRepository
 
 router = APIRouter(prefix='/trainings', tags=['trainings'])
@@ -69,7 +68,6 @@ async def patch_training(
         train_repo=Depends(get_repo(TrainingRepository))
 ) -> GetTraining:
     update_dict = update_model.model_dump(exclude_defaults=True, exclude_unset=True)
-    print(f"Update dictionary: {update_dict}")
     training = await train_repo.update(train_id, update_dict)
     return training
 

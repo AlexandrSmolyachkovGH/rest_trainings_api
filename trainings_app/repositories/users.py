@@ -1,14 +1,14 @@
-from typing import Union, Optional
+from typing import Optional
 from datetime import datetime
 
+from trainings_app.db.fields.users import UserFields
 from trainings_app.schemas.users import CreateUser, GetUser
 from trainings_app.repositories.base import BaseRepository
-from trainings_app.exceptions.user import ConvertUserRecordError, UserAttrError
+from trainings_app.exceptions.users import ConvertUserRecordError, UserAttrError, UserNotFoundError
 
 
 class UserRepository(BaseRepository):
-    fields = ['id', 'username', 'password_hash', 'email', 'role', 'created_at', 'last_login', 'deleted_at']
-    fields_str = ', '.join([field for field in fields])
+    fields_str = UserFields.get_fields_str()
 
     @staticmethod
     def get_user_from_record(record: dict) -> GetUser:
@@ -34,10 +34,10 @@ class UserRepository(BaseRepository):
     async def create(self, user: CreateUser) -> GetUser:
         keys, values, indexes = self.data_from_dict(user)
         query = f"""
-                INSERT INTO users ({', '.join(keys)})
-                VALUES ({', '.join([f'${i}' for i in indexes])})
-                RETURNING *;
-            """
+            INSERT INTO users ({', '.join(keys)})
+            VALUES ({', '.join([f'${i}' for i in indexes])})
+            RETURNING {UserFields.get_fields_str()};
+        """
         user_record = await self.db.fetchrow(query, *values)
         return self.get_user_from_record(user_record)
 
@@ -50,44 +50,45 @@ class UserRepository(BaseRepository):
         user_record = await self.fetchrow_or_404(query, user_id)
         return self.get_user_from_record(user_record)
 
-    async def delete(self, user_attr: dict) -> GetUser:
-        attr_key, attr_value = self.check_user_attr(user_attr)
+    async def delete(self, user_id: int) -> GetUser:
         query = f"""
             UPDATE users
             SET deleted_at = $1
-            WHERE {attr_key} = $2 AND deleted_at IS NULL
-            RETURNING *;
+            WHERE id = $2 AND deleted_at IS NULL
+            RETURNING {UserFields.get_fields_str()};
         """
-        user_record = await self.fetchrow_or_404(query, datetime.now(), attr_value)
+        user_record = await self.fetchrow_or_404(query, datetime.now(), user_id)
         return self.get_user_from_record(user_record)
 
-    async def get_users(self, filter_dict: Optional[dict]) -> Union[list[GetUser], list]:
-        val = []
+    async def get_users(self, filters: Optional[dict]) -> list[GetUser]:
+        values = []
         query = f"""
-                    SELECT {self.fields_str}
-                    FROM users
-                """
-        if filter_dict:
-            keys, values, indexes = self.data_from_dict(filter_dict)
+            SELECT {self.fields_str}
+            FROM users
+        """
+        if filters:
+            keys, values, indexes = self.data_from_dict(filters)
             where_clause = ' AND '.join([f"{key} = ${ind}" for key, ind in zip(keys, indexes)])
             query += f"""
                 WHERE {where_clause}
             """
-            val = values
         query += ";"
-        user_records = await self.db.fetch(query, *val)
-        users = [GetUser(**record) for record in user_records]
-        return users
+        user_records = await self.db.fetch(query, *values)
+        if not user_records:
+            raise UserNotFoundError(f"No relevant records error")
+        return [GetUser(**record) for record in user_records]
 
-    async def update(self, user_id: int, user: dict) -> GetUser:
-        keys, values, indexes = self.data_from_dict(user)
+    async def update(self, user_id: int, update_data: dict) -> GetUser:
+        keys, values, indexes = self.data_from_dict(update_data)
+        if not values:
+            raise UserAttrError("Invalid data for update")
+        values.append(user_id)
         set_clause = ", ".join([f"{key} = ${idx}" for key, idx in zip(keys, indexes)])
         query = f"""
             UPDATE users
             SET {set_clause}
             WHERE id = ${len(indexes) + 1} AND deleted_at IS NULL
-            RETURNING *; 
+            RETURNING {UserFields.get_fields_str()}; 
         """
-        values.append(user_id)
         user_record = await self.fetchrow_or_404(query, *values)
         return self.get_user_from_record(user_record)

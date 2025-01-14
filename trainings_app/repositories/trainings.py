@@ -3,7 +3,7 @@ from typing import Optional
 from trainings_app.db.fields.trainings import TrainingFields
 from trainings_app.repositories.base import BaseRepository
 from trainings_app.schemas.trainings import CreateTraining, GetTraining
-from trainings_app.exceptions.trainings import TrainingNotFoundError, ConvertTrainingRecordError
+from trainings_app.exceptions.trainings import TrainingNotFoundError, ConvertTrainingRecordError, TrainingsAttrError
 
 
 class TrainingRepository(BaseRepository):
@@ -63,6 +63,8 @@ class TrainingRepository(BaseRepository):
 
     async def update(self, train_id: int, update_data: dict) -> GetTraining:
         keys, values, indexes = self.data_from_dict(update_data)
+        if not values:
+            raise TrainingsAttrError("Invalid data for update")
         values.append(train_id)
         set_clause = ', '.join([f"{k} = ${i}" for k, i in zip(keys, indexes)])
         query = f"""

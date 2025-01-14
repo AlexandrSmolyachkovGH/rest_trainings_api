@@ -54,3 +54,6 @@ class PatchUser(BaseModel):
     deleted_at: Optional[datetime] = Field(None, description="Date of deletion of the user account.",
                                            example='2024-12-25 00:00:00')
 
+
+class FilterUser(PatchUser):
+    id: Optional[int] = Field(None, ge=0, description="User ID", example=123)
