@@ -17,7 +17,7 @@ async def get_trainings_list(
         train_repo=Depends(get_repo(TrainingRepository))
 ) -> list[GetTraining]:
     filter_dict = filter_model.model_dump(exclude_defaults=True) if filter_model else None
-    trainings = await train_repo.get_trainings(filter_dict if filter_dict else None)
+    trainings = await train_repo.get_trainings(filter_dict)
     return trainings
 
 

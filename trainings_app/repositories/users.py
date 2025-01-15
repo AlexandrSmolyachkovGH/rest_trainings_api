@@ -4,7 +4,8 @@ from datetime import datetime
 from trainings_app.db.fields.users import UserFields
 from trainings_app.schemas.users import CreateUser, GetUser
 from trainings_app.repositories.base import BaseRepository
-from trainings_app.exceptions.users import ConvertUserRecordError, UserAttrError, UserNotFoundError
+from trainings_app.exceptions.users import UserAttrError, UserNotFoundError
+from trainings_app.exceptions.exceptions import ConvertRecordError, RecordNotFoundError
 
 
 class UserRepository(BaseRepository):
@@ -15,21 +16,11 @@ class UserRepository(BaseRepository):
         """Retrieve GetUser model from dict data"""
 
         if not record:
-            raise ConvertUserRecordError("No record found to convert to GetUser")
-        return GetUser(**record)
-
-    @staticmethod
-    def check_user_attr(user_attr: dict):
-        """Check for the passed attribute"""
-
-        if not user_attr or len(user_attr) != 1 or not isinstance(user_attr, dict):
-            raise UserAttrError(f"The passed attr must be a dict with a length of exactly 1.")
-        attr_key, attr_value = next(iter(user_attr.items()))
-        if attr_key not in ('id', 'username', 'email'):
-            raise UserAttrError(
-                f"The key of passed attr must belong to one of the following: 'id', 'username', or 'email'."
-            )
-        return attr_key, attr_value
+            raise ConvertRecordError(record=record, model_name="GetUser", error_detail="No record found to convert")
+        try:
+            return GetUser(**record)
+        except Exception as e:
+            raise ConvertRecordError(record=record, model_name="GetUser", error_detail=str(e))
 
     async def create(self, user: CreateUser) -> GetUser:
         keys, values, indexes = self.data_from_dict(user)
@@ -75,7 +66,7 @@ class UserRepository(BaseRepository):
         query += ";"
         user_records = await self.db.fetch(query, *values)
         if not user_records:
-            raise UserNotFoundError(f"No relevant records error")
+            raise RecordNotFoundError(f"No relevant records error")
         return [GetUser(**record) for record in user_records]
 
     async def update(self, user_id: int, update_data: dict) -> GetUser:

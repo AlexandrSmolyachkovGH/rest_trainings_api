@@ -12,7 +12,10 @@ class BaseRepository(abc.ABC):
         if not record:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Resource not found."
+                detail={
+                    "error": "ResourceNotFound",
+                    "message": "No record found for the query."
+                }
             )
         return record
 
