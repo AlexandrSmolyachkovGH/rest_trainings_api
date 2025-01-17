@@ -1,11 +1,12 @@
 from typing import Optional
 from datetime import datetime
+from fastapi import HTTPException, status
 
 from trainings_app.db.fields.users import UserFields
 from trainings_app.schemas.users import CreateUser, GetUser
 from trainings_app.repositories.base import BaseRepository
-from trainings_app.exceptions.users import UserAttrError, UserNotFoundError
-from trainings_app.exceptions.exceptions import ConvertRecordError, RecordNotFoundError
+from trainings_app.exceptions.exceptions import ConvertRecordError, RecordNotFoundError, AttrError
+from trainings_app.logging.repositories import repo_logger
 
 
 class UserRepository(BaseRepository):
@@ -16,11 +17,13 @@ class UserRepository(BaseRepository):
         """Retrieve GetUser model from dict data"""
 
         if not record:
+            repo_logger.error(f"No record found to convert Error")
             raise ConvertRecordError(record=record, model_name="GetUser", error_detail="No record found to convert")
         try:
             return GetUser(**record)
         except Exception as e:
-            raise ConvertRecordError(record=record, model_name="GetUser", error_detail=str(e))
+            repo_logger.error(f"Convert to model Error: {e}")
+            raise ConvertRecordError(record=record, model_name="GetUser", error_detail="Invalid data for conversion")
 
     async def create(self, user: CreateUser) -> GetUser:
         keys, values, indexes = self.data_from_dict(user)
@@ -29,7 +32,14 @@ class UserRepository(BaseRepository):
             VALUES ({', '.join([f'${i}' for i in indexes])})
             RETURNING {UserFields.get_fields_str()};
         """
-        user_record = await self.db.fetchrow(query, *values)
+        try:
+            user_record = await self.db.fetchrow(query, *values)
+        except Exception as e:
+            repo_logger.error(f"Creation Error: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User creation failed. Please try again later."
+            )
         return self.get_user_from_record(user_record)
 
     async def get(self, user_id: int) -> GetUser:
@@ -66,13 +76,15 @@ class UserRepository(BaseRepository):
         query += ";"
         user_records = await self.db.fetch(query, *values)
         if not user_records:
-            raise RecordNotFoundError(f"No relevant records error")
+            repo_logger.error(f"No relevant records Error")
+            raise RecordNotFoundError(f"No relevant records")
         return [GetUser(**record) for record in user_records]
 
     async def update(self, user_id: int, update_data: dict) -> GetUser:
         keys, values, indexes = self.data_from_dict(update_data)
         if not values:
-            raise UserAttrError("Invalid data for update")
+            repo_logger.error(f"Invalid update data")
+            raise AttrError("Invalid update data")
         values.append(user_id)
         set_clause = ", ".join([f"{key} = ${idx}" for key, idx in zip(keys, indexes)])
         query = f"""

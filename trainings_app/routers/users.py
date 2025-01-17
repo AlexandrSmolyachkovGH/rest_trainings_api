@@ -57,7 +57,7 @@ async def delete_user(
             description="Complete update of the user record",
             status_code=status.HTTP_200_OK)
 async def put_user(
-        user_id: int, user: PutUser,
+        user_id: Annotated[int, Path(gt=0)], user: PutUser,
         user_repo=Depends(get_repo(UserRepository))) -> GetUser:
     updated_record = await user_repo.update(user_id, user.dict())
     return updated_record
@@ -68,7 +68,7 @@ async def put_user(
               description="Partial update of the user record",
               status_code=status.HTTP_200_OK)
 async def patch_user(
-        user_id: int, user: PatchUser,
+        user_id: Annotated[int, Path(gt=0)], user: PatchUser,
         user_repo=Depends(get_repo(UserRepository))) -> GetUser:
     updated_record = await user_repo.update(user_id, user.dict(exclude_defaults=True, exclude_unset=True))
     return updated_record

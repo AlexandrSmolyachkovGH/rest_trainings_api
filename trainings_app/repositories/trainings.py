@@ -1,9 +1,11 @@
+from fastapi import HTTPException, status
 from typing import Optional
 
 from trainings_app.db.fields.trainings import TrainingFields
 from trainings_app.repositories.base import BaseRepository
 from trainings_app.schemas.trainings import CreateTraining, GetTraining
-from trainings_app.exceptions.trainings import TrainingNotFoundError, ConvertTrainingRecordError, TrainingsAttrError
+from trainings_app.exceptions.exceptions import ConvertRecordError, RecordNotFoundError, AttrError
+from trainings_app.logging.repositories import repo_logger
 
 
 class TrainingRepository(BaseRepository):
@@ -12,8 +14,15 @@ class TrainingRepository(BaseRepository):
     def get_training_from_record(record: dict) -> GetTraining:
         """Retrieve GetTraining model from dict data"""
         if not record:
-            raise ConvertTrainingRecordError("No record found to convert to GetTraining")
-        return GetTraining(**record)
+            repo_logger.error(f"No record found to convert Error")
+            raise ConvertRecordError(record=record, model_name="GetTraining", error_detail="No record found to convert")
+        try:
+            return GetTraining(**record)
+        except Exception as e:
+            repo_logger.error(f"Convert to model Error: {e}")
+            raise ConvertRecordError(
+                record=record, model_name="GetTraining", error_detail="Invalid data for conversion"
+            )
 
     async def create(self, arg: CreateTraining) -> GetTraining:
         keys, values, indexes = self.data_from_dict(arg)
@@ -22,7 +31,14 @@ class TrainingRepository(BaseRepository):
             VALUES ({', '.join([f'${i}' for i in indexes])})
             RETURNING {TrainingFields.get_fields_str()};
         """
-        record = await self.fetchrow_or_404(query, *values)
+        try:
+            record = await self.fetchrow_or_404(query, *values)
+        except Exception as e:
+            repo_logger.error(f"Creation Error: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Training creation failed. Please try again later."
+            )
         return self.get_training_from_record(record)
 
     async def get(self, train_id: int) -> GetTraining:
@@ -49,7 +65,8 @@ class TrainingRepository(BaseRepository):
         query += ";"
         records = await self.db.fetch(query, *values)
         if not records:
-            raise TrainingNotFoundError(f"No relevant records error")
+            repo_logger.error(f"No relevant records Error")
+            raise RecordNotFoundError(f"No relevant records error")
         return [GetTraining(**record) for record in records]
 
     async def delete(self, train_id: int) -> GetTraining:
@@ -64,7 +81,8 @@ class TrainingRepository(BaseRepository):
     async def update(self, train_id: int, update_data: dict) -> GetTraining:
         keys, values, indexes = self.data_from_dict(update_data)
         if not values:
-            raise TrainingsAttrError("Invalid data for update")
+            repo_logger("Invalid update data")
+            raise AttrError("Invalid update data")
         values.append(train_id)
         set_clause = ', '.join([f"{k} = ${i}" for k, i in zip(keys, indexes)])
         query = f"""
