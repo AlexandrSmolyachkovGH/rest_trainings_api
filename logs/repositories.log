@@ -1,0 +1,4 @@
+2025-01-18 16:41:04,250 - repositories - ERROR - Creation Error: duplicate key value violates unique constraint "users_username_key"
+DETAIL:  Key (username)=(john_doe_123) already exists.
+2025-01-18 18:53:26,211 - repositories - ERROR - Creation Error: insert or update on table "trainings_exercises" violates foreign key constraint "trainings_exercises_training_id_fkey"
+DETAIL:  Key (training_id)=(1) is not present in table "trainings".
