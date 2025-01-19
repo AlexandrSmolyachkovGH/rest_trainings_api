@@ -36,9 +36,11 @@ class PatchMembership(CreateMembership):
                                                     description='Allowed membership access',
                                                     example='VIP')
     description: Optional[str] = Field(
+        default=None,
         description='Membership card description, including services, benefits, and additional information.',
         example='Full access to all services')
-    price: Optional[float] = Field(ge=0, description='Membership price in local currency', example='149.99')
+    price: Optional[float] = Field(default=None, ge=0, description='Membership price in local currency',
+                                   example='149.99')
 
 
 class GetMembership(CreateMembership):

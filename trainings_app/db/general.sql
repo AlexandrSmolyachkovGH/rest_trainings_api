@@ -82,5 +82,7 @@ CREATE TABLE Clients_training_plan (
 );
 CREATE TABLE Memberships (
     id SERIAL PRIMARY KEY,
-    title VARCHAR(50) NOT NULL,
+    access_level access_level_enum DEFAULT 'STANDARD',
+    description TEXT DEFAULT NULL,
+    price NUMERIC(8, 2) NOT NULL
 );

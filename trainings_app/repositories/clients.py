@@ -1,30 +1,29 @@
 from typing import Optional
+from fastapi import HTTPException, status
 
 from trainings_app.repositories.base import BaseRepository
-from fastapi import HTTPException, status
-from trainings_app.schemas.clients import CreateClient, GetClient, ClientFilters
-
-
-class ConvertClientRecordError(ValueError):
-    pass
-
-
-class ClientAttrError(ValueError):
-    pass
+from trainings_app.schemas.clients import CreateClient, GetClient
+from trainings_app.exceptions.exceptions import ConvertRecordError, RecordNotFoundError, AttrError
+from trainings_app.logging.repositories import repo_logger
+from trainings_app.db.fields.clients import ClientFields
 
 
 class ClientRepository(BaseRepository):
-    fields = ['id', 'user_id', 'membership_id', 'first_name', 'last_name', 'phone_number', 'gender', 'date_of_birth',
-              'weight_kg', 'height_cm', 'status']
-    fields_str = ', '.join(elem for elem in fields)
+    fields = ClientFields.get_fields_list()
+    fields_str = ClientFields.get_fields_str()
 
     @staticmethod
     def get_client_from_record(record: dict) -> GetClient:
         """Retrieve GetClient model from dict data"""
 
         if not record:
-            raise ConvertClientRecordError("No record found to convert to GetClient")
-        return GetClient(**record)
+            repo_logger.error(f"No record found to convert Error")
+            raise ConvertRecordError(record=record, model_name="GetClient", error_detail="No record found to convert")
+        try:
+            return GetClient(**record)
+        except Exception as e:
+            repo_logger.error(f"Convert to model Error: {e}")
+            raise ConvertRecordError(record=record, model_name="GetClient", error_detail="Invalid data for conversion")
 
     async def create(self, client: CreateClient) -> GetClient:
         keys, values, indexes = self.data_from_dict(client)
@@ -34,7 +33,14 @@ class ClientRepository(BaseRepository):
                 VALUES ({values_clause})
                 RETURNING {self.fields_str};
             """
-        client_record = await self.fetchrow_or_404(query, *values)
+        try:
+            client_record = await self.db.fetchrow(query, *values)
+        except Exception as e:
+            repo_logger.error(f"Creation Error: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Client creation failed. Please try again later."
+            )
         return self.get_client_from_record(client_record)
 
     async def get(self, client_id: int) -> GetClient:
@@ -60,8 +66,10 @@ class ClientRepository(BaseRepository):
             """
         query += ';'
         clients_data = await self.db.fetch(query, *values)
-        clients_list = [GetClient(**client) for client in clients_data]
-        return clients_list
+        if not clients_data:
+            repo_logger.error(f"No relevant records Error")
+            raise RecordNotFoundError(f"No relevant records")
+        return [GetClient(**client) for client in clients_data]
 
     async def delete(self, client_id: int) -> GetClient:
         query = f"""
@@ -74,6 +82,9 @@ class ClientRepository(BaseRepository):
 
     async def update(self, client_id: int, update_data: dict) -> GetClient:
         keys, values, indexes = self.data_from_dict(update_data)
+        if not values:
+            repo_logger.error(f"Invalid update data")
+            raise AttrError("Invalid update data")
         values.append(client_id)
         set_clause = self.make_set_clause(keys=keys, indexes=indexes)
         query = f"""
