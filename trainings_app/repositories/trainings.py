@@ -87,3 +87,41 @@ class TrainingRepository(BaseRepository):
         """
         record = await self.fetchrow_or_404(query, *values)
         return self.get_training_from_record(record)
+
+    async def create_train_with_ex(self, arg: CreateTraining, exercises: list[int] = []) -> GetTraining:
+        async with self.db.transaction():
+            keys, values, indexes = self.data_from_dict(arg)
+            query = f"""
+                INSERT INTO trainings ({', '.join(keys)})
+                VALUES ({', '.join([f'${i}' for i in indexes])})
+                RETURNING id;
+            """
+            try:
+                record = await self.fetchrow_or_404(query, *values)
+                training_id = record['id']
+            except Exception as e:
+                repo_logger.error(f"Creation Error: {e}")
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Training creation failed. Please try again later."
+                )
+
+            if exercises:
+                try:
+                    values_clause = ", ".join(f"({training_id}, {exercise_id})" for exercise_id in exercises)
+                    add_ex_query = f"""
+                        INSERT INTO trainings_exercises (training_id, exercise_id)
+                        VALUES {values_clause}
+                        RETURNING training_id, exercise_id;
+                    """
+                    records = await self.db.fetch(add_ex_query)
+                    return [dict(record) for record in records]
+                except Exception as e:
+                    repo_logger.error(f"Executemany Error: {e}")
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="Error with adding exercises to the training"
+                    )
+            else:
+                repo_logger.error(f"Empty exercises list")
+                raise AttrError(f"Empty exercises list")
