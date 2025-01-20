@@ -3,6 +3,8 @@ from pydantic import BaseModel, Field
 from datetime import date
 from enum import Enum
 
+from trainings_app.schemas.exercises import GetExercise
+
 
 class TrainingTypeEnum(str, Enum):
     CARDIO = 'CARDIO'
