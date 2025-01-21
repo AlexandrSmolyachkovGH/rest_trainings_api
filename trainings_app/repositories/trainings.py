@@ -9,6 +9,7 @@ from trainings_app.logging.repositories import repo_logger
 
 
 class TrainingRepository(BaseRepository):
+    fields = TrainingFields
 
     @staticmethod
     def get_training_from_record(record: dict) -> GetTraining:
@@ -29,7 +30,7 @@ class TrainingRepository(BaseRepository):
         query = f"""
             INSERT INTO trainings ({', '.join(keys)})
             VALUES ({', '.join([f'${i}' for i in indexes])})
-            RETURNING {TrainingFields.get_fields_str()};
+            RETURNING {self.fields.get_fields_str()};
         """
         try:
             record = await self.fetchrow_or_404(query, *values)
@@ -43,7 +44,7 @@ class TrainingRepository(BaseRepository):
 
     async def get(self, train_id: int) -> GetTraining:
         query = f"""
-            SELECT {TrainingFields.get_fields_str()}
+            SELECT {self.fields.get_fields_str()}
             FROM trainings
             WHERE id = $1;
         """
@@ -53,7 +54,7 @@ class TrainingRepository(BaseRepository):
     async def get_trainings(self, filters: Optional[dict] = None) -> list[GetTraining]:
         values = []
         query = f"""
-            SELECT {TrainingFields.get_fields_str()}
+            SELECT {self.fields.get_fields_str()}
             FROM trainings
         """
         if filters:
@@ -73,7 +74,7 @@ class TrainingRepository(BaseRepository):
         query = f"""
             DELETE FROM trainings
             WHERE id = $1
-            RETURNING {TrainingFields.get_fields_str()};
+            RETURNING {self.fields.get_fields_str()};
         """
         record = await self.fetchrow_or_404(query, train_id)
         return self.get_training_from_record(record)
@@ -89,7 +90,7 @@ class TrainingRepository(BaseRepository):
             UPDATE trainings
             SET {set_clause}
             WHERE id = ${len(values)}
-            RETURNING {TrainingFields.get_fields_str()};            
+            RETURNING {self.fields.get_fields_str()};            
         """
         record = await self.fetchrow_or_404(query, *values)
         return self.get_training_from_record(record)

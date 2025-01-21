@@ -10,7 +10,7 @@ from trainings_app.logging.repositories import repo_logger
 
 
 class UserRepository(BaseRepository):
-    fields_str = UserFields.get_fields_str()
+    fields = UserFields
 
     @staticmethod
     def get_user_from_record(record: dict) -> GetUser:
@@ -30,7 +30,7 @@ class UserRepository(BaseRepository):
         query = f"""
             INSERT INTO users ({', '.join(keys)})
             VALUES ({', '.join([f'${i}' for i in indexes])})
-            RETURNING {UserFields.get_fields_str()};
+            RETURNING {self.fields.get_fields_str()};
         """
         try:
             user_record = await self.db.fetchrow(query, *values)
@@ -44,7 +44,7 @@ class UserRepository(BaseRepository):
 
     async def get(self, user_id: int) -> GetUser:
         query = f"""
-            SELECT {self.fields_str}
+            SELECT {self.fields.get_fields_str()}
             FROM users
             WHERE id = $1;
         """
@@ -56,7 +56,7 @@ class UserRepository(BaseRepository):
             UPDATE users
             SET deleted_at = $1
             WHERE id = $2 AND deleted_at IS NULL
-            RETURNING {UserFields.get_fields_str()};
+            RETURNING {self.fields.get_fields_str()};
         """
         user_record = await self.fetchrow_or_404(query, datetime.now(), user_id)
         return self.get_user_from_record(user_record)
@@ -64,7 +64,7 @@ class UserRepository(BaseRepository):
     async def get_users(self, filters: Optional[dict]) -> list[GetUser]:
         values = []
         query = f"""
-            SELECT {self.fields_str}
+            SELECT {self.fields.get_fields_str()}
             FROM users
         """
         if filters:
@@ -91,7 +91,7 @@ class UserRepository(BaseRepository):
             UPDATE users
             SET {set_clause}
             WHERE id = ${len(indexes) + 1} AND deleted_at IS NULL
-            RETURNING {UserFields.get_fields_str()}; 
+            RETURNING {self.fields.get_fields_str()}; 
         """
         user_record = await self.fetchrow_or_404(query, *values)
         return self.get_user_from_record(user_record)

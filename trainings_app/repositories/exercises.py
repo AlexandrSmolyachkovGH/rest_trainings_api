@@ -9,6 +9,8 @@ from trainings_app.exceptions.exceptions import ConvertRecordError, RecordNotFou
 
 
 class ExerciseRepository(BaseRepository):
+    fields = ExerciseFields
+
     @staticmethod
     def get_exercise_from_record(record: dict) -> GetExercise:
         """Retrieve GetTraining model from dict data"""
@@ -27,7 +29,7 @@ class ExerciseRepository(BaseRepository):
         query = f"""
             INSERT INTO exercises ({', '.join(keys)})
             VALUES ({', '.join([f"${i}" for i in indexes])})
-            RETURNING {ExerciseFields.get_fields_str()};
+            RETURNING {self.fields.get_fields_str()};
         """
         try:
             record = await self.db.fetchrow(query, *values)
@@ -41,7 +43,7 @@ class ExerciseRepository(BaseRepository):
 
     async def get(self, exercise_id: int) -> GetExercise:
         query = f"""
-            SELECT {ExerciseFields.get_fields_str()}
+            SELECT {self.fields.get_fields_str()}
             FROM exercises
             WHERE id = $1;
         """
@@ -51,7 +53,7 @@ class ExerciseRepository(BaseRepository):
     async def get_exercises(self, filters: Optional[dict]) -> list[GetExercise]:
         values = []
         query = f"""
-            SELECT {ExerciseFields.get_fields_str()}
+            SELECT {self.fields.get_fields_str()}
             FROM exercises
         """
         if filters:
@@ -71,7 +73,7 @@ class ExerciseRepository(BaseRepository):
         query = f"""
             DELETE FROM exercises
             WHERE id = $1
-            RETURNING {ExerciseFields.get_fields_str()};
+            RETURNING {self.fields.get_fields_str()};
         """
         record = await self.fetchrow_or_404(query, exercise_id)
         return self.get_exercise_from_record(record)
@@ -87,7 +89,7 @@ class ExerciseRepository(BaseRepository):
             UPDATE exercises
             SET {set_clause}
             WHERE id = ${len(values)}
-            RETURNING {ExerciseFields.get_fields_str()};
+            RETURNING {self.fields.get_fields_str()};
         """
         record = await self.fetchrow_or_404(query, *values)
         return self.get_exercise_from_record(record)

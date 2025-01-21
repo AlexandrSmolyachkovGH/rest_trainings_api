@@ -9,8 +9,7 @@ from trainings_app.db.fields.clients import ClientFields
 
 
 class ClientRepository(BaseRepository):
-    fields = ClientFields.get_fields_list()
-    fields_str = ClientFields.get_fields_str()
+    fields = ClientFields
 
     @staticmethod
     def get_client_from_record(record: dict) -> GetClient:
@@ -31,7 +30,7 @@ class ClientRepository(BaseRepository):
         query = f"""
                 INSERT INTO clients ({', '.join(keys)})
                 VALUES ({values_clause})
-                RETURNING {self.fields_str};
+                RETURNING {self.fields.get_fields_str()};
             """
         try:
             client_record = await self.db.fetchrow(query, *values)
@@ -45,7 +44,7 @@ class ClientRepository(BaseRepository):
 
     async def get(self, client_id: int) -> GetClient:
         query = f"""
-            SELECT {self.fields_str} 
+            SELECT {self.fields.get_fields_str()} 
             FROM clients 
             WHERE id = $1;
         """
@@ -54,7 +53,7 @@ class ClientRepository(BaseRepository):
 
     async def get_clients(self, filter_params: Optional[dict] = None) -> list[GetClient]:
         query = f"""
-            SELECT {self.fields_str}
+            SELECT {self.fields.get_fields_str()}
             FROM clients
         """
         values = []
@@ -75,7 +74,7 @@ class ClientRepository(BaseRepository):
         query = f"""
             DELETE FROM clients
             WHERE id = $1
-            RETURNING {self.fields_str};
+            RETURNING {self.fields.get_fields_str()};
         """
         deleted_client = await self.fetchrow_or_404(query, client_id)
         return self.get_client_from_record(deleted_client)
@@ -91,7 +90,7 @@ class ClientRepository(BaseRepository):
             UPDATE {', '.join([key for key in keys])}
             SET {set_clause}
             WHERE id = $1
-            RETURNING {self.fields_str};
+            RETURNING {self.fields.get_fields_str()};
         """
         updated_client = self.fetchrow_or_404(query, *values)
         return self.get_client_from_record(updated_client)

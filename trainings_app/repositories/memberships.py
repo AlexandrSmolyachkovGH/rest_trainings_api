@@ -9,8 +9,7 @@ from trainings_app.logging.repositories import repo_logger
 
 
 class MembershipRepository(BaseRepository):
-    columns = MembershipFields.get_fields_list()
-    str_columns = MembershipFields.get_fields_str()
+    fields = MembershipFields
 
     @staticmethod
     def get_membership_from_record(record: dict) -> GetMembership:
@@ -31,7 +30,7 @@ class MembershipRepository(BaseRepository):
         query = f"""
             INSERT INTO memberships ({', '.join(keys)})
             VALUES ({', '.join([f'${i}' for i in indexes])})
-            RETURNING {self.str_columns};
+            RETURNING {self.fields.get_fields_str()};
         """
         try:
             record = await self.db.fetchrow(query, *values)
@@ -45,7 +44,7 @@ class MembershipRepository(BaseRepository):
 
     async def get_memberships(self, access_level: Optional[str] = None) -> list[GetMembership]:
         query = f"""
-            SELECT {', '.join(c for c in self.columns)}
+            SELECT {self.fields.get_fields_str()}
             FROM memberships
         """
         params = []
@@ -61,7 +60,7 @@ class MembershipRepository(BaseRepository):
 
     async def get(self, membership_id: int) -> GetMembership:
         query = f"""
-            SELECT {self.str_columns}
+            SELECT {self.fields.get_fields_str()}
             FROM memberships
             WHERE id = $1;
         """
@@ -79,7 +78,7 @@ class MembershipRepository(BaseRepository):
             UPDATE memberships
             SET {set_clause}
             WHERE id = ${len(indexes) + 1}
-            RETURNING {self.str_columns};
+            RETURNING {self.fields.get_fields_str()};
         """
         record = await self.fetchrow_or_404(query, *values)
         return self.get_membership_from_record(record)
@@ -88,7 +87,7 @@ class MembershipRepository(BaseRepository):
         query = f"""
             DELETE FROM memberships
             WHERE id = $1
-            RETURNING {self.str_columns};
+            RETURNING {self.fields.get_fields_str()};
         """
         record = await self.fetchrow_or_404(query, membership_id)
         return self.get_membership_from_record(record)

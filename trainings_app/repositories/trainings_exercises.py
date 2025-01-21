@@ -9,8 +9,7 @@ from trainings_app.db.fields.trainings_exercises import TrainingExerciseFields
 
 
 class TrainingExerciseRepository(BaseRepository):
-    fields_list = TrainingExerciseFields.get_fields_list()
-    fields_str = TrainingExerciseFields.get_fields_str()
+    fields = TrainingExerciseFields
 
     @staticmethod
     def get_model_from_record(record: dict) -> GetTrainingExercise:
@@ -33,7 +32,7 @@ class TrainingExerciseRepository(BaseRepository):
         query = f"""
             INSERT INTO trainings_exercises ({', '.join(keys)})
             VALUES ({', '.join([f'${i}' for i in indexes])})
-            RETURNING {self.fields_str};
+            RETURNING {self.fields.get_fields_str()};
         """
         try:
             record = await self.fetchrow_or_404(query, *values)
@@ -47,7 +46,7 @@ class TrainingExerciseRepository(BaseRepository):
 
     async def get(self, train_id: int, exercise_id: int) -> GetTrainingExercise:
         query = f"""
-            SELECT {self.fields_str}
+            SELECT {self.fields.get_fields_str()}
             FROM trainings_exercises
             WHERE training_id = $1 AND exercise_id = $2;
         """
@@ -65,7 +64,7 @@ class TrainingExerciseRepository(BaseRepository):
             UPDATE trainings_exercises
             SET {set_clause}
             WHERE training_id = ${len(values) - 1} AND exercise_id = ${len(values)}
-            RETURNING {self.fields_str};            
+            RETURNING {self.fields.get_fields_str()};            
         """
         record = await self.fetchrow_or_404(query, *values)
         return self.get_model_from_record(record)
@@ -74,7 +73,7 @@ class TrainingExerciseRepository(BaseRepository):
         query = f"""
             DELETE FROM trainings_exercises
             WHERE training_id = $1 AND exercise_id = $2
-            RETURNING {self.fields_str};
+            RETURNING {self.fields.get_fields_str()};
         """
         record = await self.fetchrow_or_404(query, train_id, exercise_id)
         return self.get_model_from_record(record)
@@ -82,7 +81,7 @@ class TrainingExerciseRepository(BaseRepository):
     async def get_trainings_exercises(self, filters: Optional[dict] = None) -> list[GetTrainingExercise]:
         values = []
         query = f"""
-                    SELECT {self.fields_str}
+                    SELECT {self.fields.get_fields_str()}
                     FROM trainings_exercises
                 """
         if filters:
