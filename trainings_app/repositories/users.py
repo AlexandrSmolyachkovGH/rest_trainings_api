@@ -1,11 +1,10 @@
 from typing import Optional
 from datetime import datetime
-from fastapi import HTTPException, status
 
 from trainings_app.db.fields.users import UserFields
 from trainings_app.schemas.users import CreateUser, GetUser
 from trainings_app.repositories.base import BaseRepository
-from trainings_app.exceptions.exceptions import ConvertRecordError, RecordNotFoundError, AttrError
+from trainings_app.exceptions.exceptions import ConvertRecordError, AttrError, CreateRecordError
 from trainings_app.logging.repositories import repo_logger
 
 
@@ -18,12 +17,12 @@ class UserRepository(BaseRepository):
 
         if not record:
             repo_logger.error(f"No record found to convert Error")
-            raise ConvertRecordError(record=record, model_name="GetUser", error_detail="No record found to convert")
+            raise ConvertRecordError(record=record, error_detail="No record found to convert")
         try:
             return GetUser(**record)
-        except Exception as e:
-            repo_logger.error(f"Convert to model Error: {e}")
-            raise ConvertRecordError(record=record, model_name="GetUser", error_detail="Invalid data for conversion")
+        except AttrError as e:
+            repo_logger.error(f"Convert to model Error: {str(e)}")
+            raise ConvertRecordError(record=record, error_detail="Invalid data for conversion")
 
     async def create(self, user: CreateUser) -> GetUser:
         keys, values, indexes = self.data_from_dict(user)
@@ -34,12 +33,9 @@ class UserRepository(BaseRepository):
         """
         try:
             user_record = await self.db.fetchrow(query, *values)
-        except Exception as e:
-            repo_logger.error(f"Creation Error: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="User creation failed. Please try again later."
-            )
+        except CreateRecordError as e:
+            repo_logger.error(f"Creation Error: {str(e)}")
+            raise CreateRecordError()
         return self.get_user_from_record(user_record)
 
     async def get(self, user_id: int) -> GetUser:
@@ -76,8 +72,7 @@ class UserRepository(BaseRepository):
         query += ";"
         user_records = await self.db.fetch(query, *values)
         if not user_records:
-            repo_logger.error(f"No relevant records Error")
-            raise RecordNotFoundError(f"No relevant records")
+            return []
         return [GetUser(**record) for record in user_records]
 
     async def update(self, user_id: int, update_data: dict) -> GetUser:

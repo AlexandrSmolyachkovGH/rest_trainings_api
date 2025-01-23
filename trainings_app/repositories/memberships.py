@@ -1,10 +1,9 @@
 from typing import Optional
-from fastapi import HTTPException, status
 
 from trainings_app.db.fields.memberships import MembershipFields
-from trainings_app.schemas.memberships import CreateMembership, GetMembership, AccessLevelEnum
+from trainings_app.schemas.memberships import CreateMembership, GetMembership
 from trainings_app.repositories.base import BaseRepository
-from trainings_app.exceptions.exceptions import ConvertRecordError, RecordNotFoundError, AttrError
+from trainings_app.exceptions.exceptions import ConvertRecordError, AttrError, CreateRecordError
 from trainings_app.logging.repositories import repo_logger
 
 
@@ -17,13 +16,12 @@ class MembershipRepository(BaseRepository):
 
         if not record:
             repo_logger.error(f"No record found to convert Error")
-            raise ConvertRecordError("No record found to convert to GetMembership")
+            raise ConvertRecordError(record=record, error_detail="No record found to convert")
         try:
             return GetMembership(**record)
-        except Exception as e:
-            repo_logger.error(f"Convert to model Error: {e}")
-            raise ConvertRecordError(record=record, model_name="GetMembership",
-                                     error_detail="Invalid data for conversion")
+        except AttrError as e:
+            repo_logger.error(f"Convert to model Error: {str(e)}")
+            raise ConvertRecordError(record=record, error_detail="Invalid data for conversion")
 
     async def create(self, arg: CreateMembership) -> GetMembership:
         keys, values, indexes = self.data_from_dict(arg)
@@ -34,12 +32,9 @@ class MembershipRepository(BaseRepository):
         """
         try:
             record = await self.db.fetchrow(query, *values)
-        except Exception as e:
-            repo_logger.error(f"Creation Error: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Membership creation failed. Please try again later."
-            )
+        except CreateRecordError as e:
+            repo_logger.error(f"Creation Error: {str(e)}")
+            raise CreateRecordError()
         return self.get_membership_from_record(record)
 
     async def get_memberships(self, access_level: Optional[str] = None) -> list[GetMembership]:
@@ -54,8 +49,7 @@ class MembershipRepository(BaseRepository):
         query += ";"
         records = await self.db.fetch(query, *params)
         if not records:
-            repo_logger.error(f"No relevant records Error")
-            raise RecordNotFoundError(f"No relevant records")
+            return []
         return [GetMembership(**record) for record in records]
 
     async def get(self, membership_id: int) -> GetMembership:
@@ -67,8 +61,8 @@ class MembershipRepository(BaseRepository):
         record = await self.fetchrow_or_404(query, membership_id)
         return self.get_membership_from_record(record)
 
-    async def update(self, membership_id: int, changes: dict) -> GetMembership:
-        keys, values, indexes = self.data_from_dict(changes)
+    async def update(self, membership_id: int, update_data: dict) -> GetMembership:
+        keys, values, indexes = self.data_from_dict(update_data)
         if not values:
             repo_logger.error(f"Invalid update data")
             raise AttrError("Invalid update data")

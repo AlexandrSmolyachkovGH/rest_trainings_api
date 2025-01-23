@@ -1,10 +1,9 @@
-from fastapi import HTTPException, status
 from typing import Optional
 
 from trainings_app.db.fields.trainings import TrainingFields
 from trainings_app.repositories.base import BaseRepository
 from trainings_app.schemas.trainings import CreateTraining, GetTraining
-from trainings_app.exceptions.exceptions import ConvertRecordError, RecordNotFoundError, AttrError
+from trainings_app.exceptions.exceptions import ConvertRecordError, AttrError, CreateRecordError
 from trainings_app.logging.repositories import repo_logger
 
 
@@ -16,14 +15,12 @@ class TrainingRepository(BaseRepository):
         """Retrieve GetTraining model from dict data"""
         if not record:
             repo_logger.error(f"No record found to convert Error")
-            raise ConvertRecordError(record=record, model_name="GetTraining", error_detail="No record found to convert")
+            raise ConvertRecordError(record=record, error_detail="No record found to convert")
         try:
             return GetTraining(**record)
-        except Exception as e:
-            repo_logger.error(f"Convert to model Error: {e}")
-            raise ConvertRecordError(
-                record=record, model_name="GetTraining", error_detail="Invalid data for conversion"
-            )
+        except AttrError as e:
+            repo_logger.error(f"Convert to model Error: {str(e)}")
+            raise ConvertRecordError(record=record, error_detail="Invalid data for conversion")
 
     async def create(self, arg: CreateTraining) -> GetTraining:
         keys, values, indexes = self.data_from_dict(arg)
@@ -34,12 +31,9 @@ class TrainingRepository(BaseRepository):
         """
         try:
             record = await self.fetchrow_or_404(query, *values)
-        except Exception as e:
-            repo_logger.error(f"Creation Error: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Training creation failed. Please try again later."
-            )
+        except CreateRecordError as e:
+            repo_logger.error(f"Creation Error: {str(e)}")
+            raise CreateRecordError()
         return self.get_training_from_record(record)
 
     async def get(self, train_id: int) -> GetTraining:
@@ -66,8 +60,7 @@ class TrainingRepository(BaseRepository):
         query += ";"
         records = await self.db.fetch(query, *values)
         if not records:
-            repo_logger.error(f"No relevant records Error")
-            raise RecordNotFoundError(f"No relevant records error")
+            return []
         return [GetTraining(**record) for record in records]
 
     async def delete(self, train_id: int) -> GetTraining:

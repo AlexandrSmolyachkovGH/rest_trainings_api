@@ -1,25 +1,20 @@
 import abc
-from fastapi import HTTPException, status
 from trainings_app.logging.repositories import repo_logger
-from trainings_app.exceptions.exceptions import ConvertRecordError, RecordNotFoundError
+from trainings_app.exceptions.exceptions import AttrError, RecordNotFoundError
 
 
 class BaseRepository(abc.ABC):
+
     def __init__(self, db):
         self.db = db
 
     async def fetchrow_or_404(self, query: str, *args) -> dict:
         """Check for data retrieval. If no data is found, raise a 404 error."""
+
         record = await self.db.fetchrow(query, *args)
         if not record:
             repo_logger.error(f"The fetchrow_or_404 Error. No record found for the query.")
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail={
-                    "error": "ResourceNotFound",
-                    "message": "No record found for the query."
-                }
-            )
+            raise RecordNotFoundError()
         return record
 
     @staticmethod
@@ -28,7 +23,7 @@ class BaseRepository(abc.ABC):
 
         if not isinstance(dct, dict):
             repo_logger.error(f"The data_from_dict Error. Invalid type of passed argument. The required type is Dict.")
-            raise ValueError(f"Invalid type of passed argument. The required type is Dict.")
+            raise AttrError(f"Invalid type of passed argument. The required type is Dict.")
 
         keys = []
         values = []
