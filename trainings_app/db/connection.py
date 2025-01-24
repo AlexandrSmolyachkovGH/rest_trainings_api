@@ -1,44 +1,13 @@
 import json
-# import os
-from typing import Optional, Type
+from typing import Optional, Type, Callable
 
 import asyncpg
 from asyncpg import Pool, Connection
 from fastapi import Depends
-# from dotenv import load_dotenv
 
 from trainings_app.settings import settings
 from trainings_app.repositories.base import BaseRepository
 from trainings_app.exceptions.exceptions import UninitializedDatabasePoolError
-
-
-# load_dotenv()
-#
-# DB_CONFIG = {
-#     "user": os.getenv("POSTGRES_USER"),
-#     "password": os.getenv("POSTGRES_PASSWORD"),
-#     "database": os.getenv("POSTGRES_DB"),
-#     "host": os.getenv("POSTGRES_HOST"),
-#     "port": os.getenv("POSTGRES_PORT"),
-# }
-#
-# EXTRA_CONFIG = {
-#     "max_size": 10,
-#     "min_size": 1
-# }
-#
-#
-# async def get_conn():
-#     async with asyncpg.create_pool(**DB_CONFIG, **EXTRA_CONFIG) as pool:
-#         async with pool.acquire() as conn:
-#             yield conn
-#
-#
-# def get_repo(repo_type):
-#     async def inner(db=Depends(get_conn)):
-#         return repo_type(db)
-#
-#     return inner
 
 
 class AsyncpgPool:
@@ -72,8 +41,8 @@ async def get_conn(pool: Pool = Depends(AsyncpgPool.get_pool)) -> Connection:
         yield conn
 
 
-def get_repo(repo_type: Type[BaseRepository]) -> BaseRepository:
-    def inner(conn=Depends(get_conn)):
+def get_repo(repo_type: Type[BaseRepository]) -> Callable[[Connection], BaseRepository]:
+    def inner(conn=Depends(get_conn)) -> BaseRepository:
         return repo_type(conn=conn)
 
     return inner

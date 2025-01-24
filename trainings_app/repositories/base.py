@@ -5,8 +5,8 @@ from trainings_app.exceptions.exceptions import AttrError, RecordNotFoundError
 
 class BaseRepository(abc.ABC):
 
-    def __init__(self, db):
-        self.db = db
+    def __init__(self, conn):
+        self.conn = conn
 
     async def fetchrow_or_404(self, query: str, *args) -> dict:
         """Check for data retrieval. If no data is found, raise a 404 error."""

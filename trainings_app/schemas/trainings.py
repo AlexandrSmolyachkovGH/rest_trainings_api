@@ -31,51 +31,186 @@ class IntensityEnum(str, Enum):
 
 
 class CreateTraining(BaseModel):
-    client_id: int = Field(description='Client ID associated with the training', example=123)
-    training_type: Optional[TrainingTypeEnum] = Field(description='Type of training', example='CARDIO')
-    title: str = Field(min_length=1, max_length=200, description='Title of the training', example='Morning Cardio')
-    intensity: Optional[IntensityEnum] = Field(description='Intensity level of the training', example='MEDIUM')
-    duration_min: int = Field(default=45, description='Duration of the training session in minutes', example=45)
-    date_of_train: Optional[date] = Field(default=None, description='Date of the training session', example='2024-12-25')
-    description: Optional[str] = Field(description='Detailed description of the training',
-                                       example='A cardio session focusing on endurance.')
+    client_id: int = Field(
+        description='Client ID associated with the training',
+        example=123
+    )
+    training_type: Optional[TrainingTypeEnum] = Field(
+        default=TrainingTypeEnum.OTHER,
+        description='Type of training',
+        example='CARDIO'
+    )
+    title: str = Field(
+        min_length=1,
+        max_length=200,
+        description='Title of the training',
+        example='Morning Cardio'
+    )
+    intensity: Optional[IntensityEnum] = Field(
+        default=IntensityEnum.VERY_LOW,
+        description='Intensity level of the training',
+        example='MEDIUM'
+    )
+    duration_min: int = Field(
+        default=45,
+        description='Duration of the training session in minutes',
+        example=45
+    )
+    date_of_train: Optional[date] = Field(
+        default=None,
+        description='Date of the training session',
+        example='2024-12-25'
+    )
+    description: Optional[str] = Field(
+        default=None,
+        description='Detailed description of the training',
+        example='A cardio session focusing on endurance.'
+    )
 
 
 class GetTraining(CreateTraining):
-    id: int = Field(ge=0, description='Unique training ID', example=123)
+    id: int = Field(
+        ge=0,
+        description='Unique training ID',
+        example=123
+    )
+    client_id: int = Field(
+        description='Client ID associated with the training',
+        example=123
+    )
+    training_type: TrainingTypeEnum = Field(
+        description='Type of training',
+        example='CARDIO'
+    )
+    title: str = Field(
+        min_length=1,
+        max_length=200,
+        description='Title of the training',
+        example='Morning Cardio'
+    )
+    intensity: IntensityEnum = Field(
+        description='Intensity level of the training',
+        example='MEDIUM'
+    )
+    duration_min: int = Field(
+        description='Duration of the training session in minutes',
+        example=45
+    )
+    date_of_train: date = Field(
+        description='Date of the training session',
+        example='2024-12-25'
+    )
+    description: str = Field(
+        description='Detailed description of the training',
+        example='A cardio session focusing on endurance.'
+    )
 
 
 class PutTraining(BaseModel):
-    training_type: Optional[TrainingTypeEnum] = Field(description='Type of training', example='CARDIO')
-    title: str = Field(min_length=1, max_length=200, description='Title of the training', example='Morning Cardio')
-    intensity: Optional[IntensityEnum] = Field(description='Intensity level of the training', example='MEDIUM')
-    duration_min: int = Field(default=45, description='Duration of the training session in minutes', example=45)
-    date_of_train: Optional[date] = Field(default=None, description='Date of the training session', example='2024-12-25')
-    description: Optional[str] = Field(description='Detailed description of the training',
-                                       example='A cardio session focusing on endurance.')
+    training_type: Optional[TrainingTypeEnum] = Field(
+        default=TrainingTypeEnum.OTHER,
+        description='Type of training',
+        example='CARDIO'
+    )
+    title: str = Field(
+        min_length=1,
+        max_length=200,
+        description='Title of the training',
+        example='Morning Cardio'
+    )
+    intensity: Optional[IntensityEnum] = Field(
+        default=IntensityEnum.VERY_LOW,
+        description='Intensity level of the training',
+        example='MEDIUM'
+    )
+    duration_min: int = Field(
+        default=45,
+        description='Duration of the training session in minutes',
+        example=45
+    )
+    date_of_train: Optional[date] = Field(
+        default=None,
+        description='Date of the training session',
+        example='2024-12-25'
+    )
+    description: Optional[str] = Field(
+        default=None,
+        description='Detailed description of the training',
+        example='A cardio session focusing on endurance.'
+    )
 
 
 class PatchTraining(BaseModel):
-    training_type: Optional[TrainingTypeEnum] = Field(default=None, description='Type of training', example='CARDIO')
-    title: Optional[str] = Field(min_length=1, max_length=200, description='Title of the training',
-                                 example='Morning Cardio')
-    intensity: Optional[IntensityEnum] = Field(default=None, description='Intensity level of the training', example='MEDIUM')
-    duration_min: Optional[int] = Field(default=45, description='Duration of the training session in minutes',
-                                        example=45)
-    date_of_train: Optional[date] = Field(default=None, description='Date of the training session', example='2024-12-25')
-    description: Optional[str] = Field(default=None, description='Detailed description of the training',
-                                       example='A cardio session focusing on endurance.')
+    training_type: Optional[TrainingTypeEnum] = Field(
+        default=TrainingTypeEnum.OTHER,
+        description='Type of training',
+        example='CARDIO'
+    )
+    title: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=200,
+        description='Title of the training',
+        example='Morning Cardio'
+    )
+    intensity: Optional[IntensityEnum] = Field(
+        default=IntensityEnum.VERY_LOW,
+        description='Intensity level of the training',
+        example='MEDIUM'
+    )
+    duration_min: Optional[int] = Field(
+        default=45,
+        description='Duration of the training session in minutes',
+        example=45
+    )
+    date_of_train: Optional[date] = Field(
+        default=None,
+        description='Date of the training session',
+        example='2024-12-25'
+    )
+    description: Optional[str] = Field(
+        default=None,
+        description='Detailed description of the training',
+        example='A cardio session focusing on endurance.'
+    )
 
 
 class FilterTraining(BaseModel):
-    id: Optional[int] = Field(None, gt=0, description='Unique training ID', example=123)
-    client_id: Optional[int] = Field(None, gt=0, description='ID of the client', example=62)
-    training_type: Optional[TrainingTypeEnum] = Field(None, description='Type of training', example='CARDIO')
-    title: Optional[str] = Field(None, min_length=1, max_length=200, description='Title of the training',
-                                 example='Morning Cardio')
-    intensity: Optional[IntensityEnum] = Field(None, description='Intensity level of the training', example='MEDIUM')
-    duration_min: Optional[int] = Field(None, description='Duration of the training session in minutes',
-                                        example=45)
-    date_of_train: Optional[date] = Field(None, description='Date of the training session', example='2024-12-25')
-    description: Optional[str] = Field(None, description='Detailed description of the training',
-                                       example='A cardio session focusing on endurance.')
+    id: Optional[int] = Field(
+        default=None,
+        gt=0,
+        description='Unique training ID',
+        example=123
+    )
+    training_type: Optional[TrainingTypeEnum] = Field(
+        default=TrainingTypeEnum.OTHER,
+        description='Type of training',
+        example='CARDIO'
+    )
+    title: Optional[str] = Field(
+        default=None,
+        min_length=1,
+        max_length=200,
+        description='Title of the training',
+        example='Morning Cardio'
+    )
+    intensity: Optional[IntensityEnum] = Field(
+        default=IntensityEnum.VERY_LOW,
+        description='Intensity level of the training',
+        example='MEDIUM'
+    )
+    duration_min: Optional[int] = Field(
+        default=45,
+        description='Duration of the training session in minutes',
+        example=45
+    )
+    date_of_train: Optional[date] = Field(
+        default=None,
+        description='Date of the training session',
+        example='2024-12-25'
+    )
+    description: Optional[str] = Field(
+        default=None,
+        description='Detailed description of the training',
+        example='A cardio session focusing on endurance.'
+    )
