@@ -1,25 +1,35 @@
-from fastapi import HTTPException, status
+class RepositoryError(Exception):
+    ...
 
 
-class ConvertRecordError(Exception):
-    def __init__(self, record: dict, model_name: str, error_detail: str):
+class CreateRecordError(RepositoryError):
+    def __init__(self):
+        message = f"Client creation failed. Please try again later."
+        super().__init__(message)
+
+
+class ConvertRecordError(RepositoryError):
+    def __init__(self, record: dict, error_detail: str):
         self.record = record
-        self.model_name = model_name
         self.error_detail = error_detail
-        message = f"Failed to convert record to {model_name}: {error_detail}"
-        super.__init__(message)
+        message = f"Failed to convert record: {error_detail}"
+        super().__init__(message)
 
 
-class RecordNotFoundError(HTTPException):
-    def __init__(self, record_id: str, model_name: str):
+class RecordNotFoundError(RepositoryError):
+    def __init__(self):
         detail = {
             "error": "RecordNotFoundError",
-            "message": f"Record with ID '{record_id}' not found in {model_name}.",
-            "record_id": record_id,
-            "model_name": model_name,
+            "message": f"Record not found Error."
         }
-        super().__init__(status_code=status.HTTP_404_NOT_FOUND, detail=detail)
+        super().__init__(detail)
 
 
 class AttrError(ValueError):
     pass
+
+
+class UninitializedDatabasePoolError(Exception):
+    def __init__(self, message="The database connection pool has not been properly initialized."):
+        self.message = message
+        super().__init__(self.message)

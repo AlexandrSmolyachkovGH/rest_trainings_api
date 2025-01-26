@@ -6,5 +6,4 @@ venv
 *.pyd
 __pycache__/
 *.db
-logs
 logs/
