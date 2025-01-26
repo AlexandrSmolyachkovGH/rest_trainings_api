@@ -12,7 +12,10 @@ steps = [
             IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'gender_enum') THEN
                 CREATE TYPE gender_enum AS ENUM ('MALE', 'FEMALE');
             END IF;
-        END $$;"""),
+        END $$;
+        """,
+         "DROP TYPE IF EXISTS gender_enum;"
+         ),
 
     step("""
         DO $$ BEGIN
@@ -22,7 +25,10 @@ steps = [
                     'PILATES', 'ENDURANCE', 'CROSSFIT', 'FUNCTIONAL', 'REHABILITATION', 
                     'DANCE', 'SWIMMING', 'OTHER');
             END IF;
-        END $$;"""),
+        END $$;
+        """,
+         "DROP TYPE IF EXISTS training_type_enum;"
+         ),
 
     step("""
         DO $$ BEGIN
@@ -30,7 +36,10 @@ steps = [
                 CREATE TYPE intensity_enum AS ENUM(
                     'VERY_LOW', 'LOW', 'MEDIUM', 'HIGH', 'VERY_HIGH', 'EXTREME');
             END IF;
-        END $$;"""),
+        END $$;
+        """
+         "DROP TYPE IF EXISTS intensity_enum;"
+         ),
 
     step("""
         DO $$ BEGIN
@@ -38,7 +47,10 @@ steps = [
                 CREATE TYPE complexity_enum AS ENUM(
                     'BEGINNER', 'NOVICE', 'INTERMEDIATE', 'ADVANCED', 'EXPERT', 'MASTER');
             END IF;
-        END $$;"""),
+        END $$;
+        """,
+         "DROP TYPE IF EXISTS complexity_enum;"
+         ),
 
     step("""
         DO $$ BEGIN
@@ -47,7 +59,10 @@ steps = [
                     'CHEST', 'BACK', 'LEGS', 'ARMS', 'CORE', 'SHOULDERS', 
                     'BUTTOCKS', 'CALVES', 'NECK', 'HIPS', 'FULL_BODY', 'OTHER');
             END IF;
-        END $$;"""),
+        END $$;
+        """,
+         "DROP TYPE IF EXISTS muscle_group_enum;"
+         ),
 
     step("""
         DO $$ BEGIN
@@ -55,7 +70,10 @@ steps = [
                 CREATE TYPE user_role_enum AS ENUM(
                     'ADMIN', 'USER', 'TRAINER', 'STAFFER', 'SYSTEM', 'ANALYST', 'OTHER');
             END IF;
-        END $$;"""),
+        END $$;
+        """,
+         "DROP TYPE IF EXISTS user_role_enum;"
+         ),
 
     step("""
         DO $$ BEGIN
@@ -63,7 +81,10 @@ steps = [
                 CREATE TYPE training_plan_status_enum AS ENUM(
                     'PREPARED', 'ACTIVE', 'COMPLETED', 'DELAYED');
             END IF;
-        END $$;"""),
+        END $$;
+        """,
+         "DROP TYPE IF EXISTS training_plan_status_enum;"
+         ),
 
     step("""
         DO $$ BEGIN
@@ -72,7 +93,10 @@ steps = [
                     'LIMIT', 'STANDARD', 'PREMIUM', 'VIP', 'FAMILY', 'TRIAL', 
                     'DAY_PASS', 'WEEK_PASS', 'GUEST', 'CORPORATE', 'DISCOUNT', 'OTHER');
             END IF;
-        END $$;"""),
+        END $$;
+        """,
+         "DROP TYPE IF EXISTS access_level_enum;"
+         ),
 
     step("""
         DO $$ BEGIN
@@ -80,7 +104,10 @@ steps = [
                 CREATE TYPE client_activity_status_enum AS ENUM(
                     'ACTIVE', 'INACTIVE', 'ON_HOLD', 'CANCELLED', 'EXPIRED', 'UPCOMING');
             END IF;
-        END $$;"""),
+        END $$;
+        """,
+         "DROP TYPE IF EXISTS client_activity_status_enum;"
+         ),
 
     step("""
         CREATE TABLE IF NOT EXISTS Users (
@@ -92,7 +119,10 @@ steps = [
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             last_login TIMESTAMP DEFAULT NULL,
             deleted_at TIMESTAMP DEFAULT NULL
-        );"""),
+        );
+        """,
+         "DROP TABLE IF EXISTS Users;"
+         ),
 
     step("""
         CREATE TABLE IF NOT EXISTS Memberships (
@@ -100,7 +130,10 @@ steps = [
             access_level access_level_enum DEFAULT 'STANDARD',
             description TEXT DEFAULT NULL,
             price NUMERIC(8, 2) NOT NULL
-        );"""),
+        );
+        """,
+         "DROP TABLE IF EXISTS Memberships;"
+         ),
 
     step("""
         CREATE TABLE IF NOT EXISTS Clients(
@@ -115,7 +148,9 @@ steps = [
             weight_kg NUMERIC(5, 2) DEFAULT NULL,
             height_cm NUMERIC(5, 2) DEFAULT NULL,
             status client_activity_status_enum DEFAULT 'ACTIVE'
-        );"""),
-
+        );
+        """,
+         "DROP TABLE IF EXISTS Clients;"
+         ),
 
 ]

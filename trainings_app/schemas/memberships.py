@@ -19,27 +19,76 @@ class AccessLevelEnum(str, Enum):
 
 
 class CreateMembership(BaseModel):
-    access_level: AccessLevelEnum = Field(default=AccessLevelEnum.STANDARD, description='Allowed membership access',
-                                          example='VIP')
+    access_level: AccessLevelEnum = Field(
+        default=AccessLevelEnum.STANDARD,
+        description='Allowed membership access',
+        example='VIP'
+    )
+    description: Optional[str] = Field(
+        default=None,
+        description='Membership card description, including services, benefits, and additional information.',
+        example='Full access to all services'
+    )
+    price: float = Field(
+        ge=0,
+        description='Membership price in local currency',
+        example='149.99'
+    )
+
+
+class GetMembership(BaseModel):
+    id: int = Field(
+        ge=0,
+        description='Membership ID',
+        example=123
+    )
+    access_level: AccessLevelEnum = Field(
+        description='Allowed membership access',
+        example='VIP'
+    )
     description: Optional[str] = Field(
         description='Membership card description, including services, benefits, and additional information.',
-        example='Full access to all services')
-    price: float = Field(ge=0, description='Membership price in local currency', example='149.99')
+        example='Full access to all services'
+    )
+    price: float = Field(
+        ge=0,
+        description='Membership price in local currency',
+        example='149.99'
+    )
 
 
-class PutMembership(CreateMembership):
-    ...
-
-
-class PatchMembership(CreateMembership):
-    access_level: Optional[AccessLevelEnum] = Field(default=AccessLevelEnum.STANDARD,
-                                                    description='Allowed membership access',
-                                                    example='VIP')
+class PutMembership(BaseModel):
+    access_level: AccessLevelEnum = Field(
+        default=AccessLevelEnum.STANDARD,
+        description='Allowed membership access',
+        example='VIP'
+    )
     description: Optional[str] = Field(
+        default=None,
         description='Membership card description, including services, benefits, and additional information.',
-        example='Full access to all services')
-    price: Optional[float] = Field(ge=0, description='Membership price in local currency', example='149.99')
+        example='Full access to all services'
+    )
+    price: float = Field(
+        ge=0,
+        description='Membership price in local currency',
+        example='149.99'
+    )
 
 
-class GetMembership(CreateMembership):
-    id: int = Field(ge=0, description='Membership ID', example=123)
+class PatchMembership(BaseModel):
+    access_level: Optional[AccessLevelEnum] = Field(
+        default=AccessLevelEnum.STANDARD,
+        description='Allowed membership access',
+        example='VIP'
+    )
+    description: Optional[str] = Field(
+        default=None,
+        description='Membership card description, including services, benefits, and additional information.',
+        example='Full access to all services'
+    )
+    price: Optional[float] = Field(
+        default=None,
+        ge=0,
+        description='Membership price in local currency',
+        example='149.99'
+    )
