@@ -45,8 +45,7 @@ async def create_user(
         user: CreateUser,
         user_repo: UserRepository = Depends(get_repo(UserRepository)),
 ):
-    user_dict = user.dict()
-    return await user_repo.create(user_dict)
+    return await user_repo.create(user.dict())
 
 
 @router.delete(

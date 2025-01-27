@@ -1,6 +1,8 @@
 import os
-from dotenv import dotenv_values
+import dotenv
 from pydantic import BaseModel, SecretStr
+
+dotenv.load_dotenv()
 
 
 class Settings(BaseModel):

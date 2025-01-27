@@ -44,8 +44,7 @@ async def create_membership(
         membership_obj: CreateMembership,
         repo: MembershipRepository = Depends(get_repo(MembershipRepository)),
 ):
-    membership_dict = membership_obj.dict()
-    return await repo.create(membership_dict)
+    return await repo.create(membership_obj.dict())
 
 
 @router.delete(

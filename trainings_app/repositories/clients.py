@@ -24,7 +24,7 @@ class ClientRepository(BaseRepository):
             repo_logger.error(f"Convert to model Error: {str(e)}")
             raise ConvertRecordError(record=record, error_detail=f"{str(e)}")
 
-    async def create(self, client: CreateClient) -> GetClient:
+    async def create(self, client: dict) -> GetClient:
         keys, values, indexes = self.data_from_dict(client)
         values_clause = ', '.join([f'${i}' for i in indexes])
         query = f"""
@@ -57,10 +57,7 @@ class ClientRepository(BaseRepository):
                 WHERE {where_clause}
             """
         query += ';'
-        clients_data = await self.db.fetch(query, *values)
-        if not clients_data:
-            repo_logger.error(f"No relevant records Error")
-            raise RecordNotFoundError(f"No relevant records")
+        clients_data = await self.conn.fetch(query, *values)
         return [GetClient(**client) for client in clients_data]
 
     async def delete(self, client_id: int) -> GetClient:

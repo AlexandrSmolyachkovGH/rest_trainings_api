@@ -1,10 +1,27 @@
 from fastapi import FastAPI
 import uvicorn
+
+from trainings_app.db.connection import AsyncpgPool
 from trainings_app.routers import users, clients, memberships, trainings, exercises, trainings_exercises
 from trainings_app.exceptions.exception_handlers import record_not_found_handler, convert_record_handler
 from trainings_app.exceptions.exceptions import RecordNotFoundError, ConvertRecordError
 
 app = FastAPI()
+
+
+@app.on_event("startup")
+async def startup():
+    """Initialize the application server."""
+
+    await AsyncpgPool.setup()
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    """Close connection pool in case of application shutdown."""
+
+    await AsyncpgPool.close_pool()
+
 
 app.include_router(router=users.router)
 app.include_router(router=clients.router)

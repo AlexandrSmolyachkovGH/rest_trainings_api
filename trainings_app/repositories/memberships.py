@@ -24,7 +24,7 @@ class MembershipRepository(BaseRepository):
             repo_logger.error(f"Convert to model Error: {str(e)}")
             raise ConvertRecordError(record=record, error_detail=f"{str(e)}")
 
-    async def create(self, arg: CreateMembership) -> GetMembership:
+    async def create(self, arg: dict) -> GetMembership:
         keys, values, indexes = self.data_from_dict(arg)
         query = f"""
             INSERT INTO memberships ({', '.join(keys)})

@@ -27,6 +27,14 @@ class MuscleGroupEnum(str, Enum):
     OTHER = 'OTHER'
 
 
+class ExerciseIDs(BaseModel):
+    exercises: Optional[list] = Field(
+        default=None,
+        description='Unique exercise IDs',
+        example='[1, 12, 5, 81]',
+    )
+
+
 class CreateExercise(BaseModel):
     title: str = Field(
         max_length=50,

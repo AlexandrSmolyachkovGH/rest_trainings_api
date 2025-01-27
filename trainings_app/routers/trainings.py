@@ -2,6 +2,7 @@ from fastapi import APIRouter, Path, Depends, status
 from typing import Annotated
 
 from trainings_app.db.connection import get_repo
+from trainings_app.schemas.exercises import ExerciseIDs
 from trainings_app.schemas.trainings import CreateTraining, GetTraining, FilterTraining, PutTraining, PatchTraining
 from trainings_app.repositories.trainings import TrainingRepository
 
@@ -46,6 +47,20 @@ async def create_training(
         train_repo: TrainingRepository = Depends(get_repo(TrainingRepository)),
 ):
     return await train_repo.create(create_model.dict())
+
+
+@router.post(
+    path='/training_with_exercises',
+    response_model=GetTraining,
+    description='Create the training',
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_training_with_exercises(
+        train_model: CreateTraining,
+        ex_ids_model: ExerciseIDs,
+        train_repo: TrainingRepository = Depends(get_repo(TrainingRepository)),
+):
+    return await train_repo.create_train_with_ex(train_model.dict(), ex_ids_model.exercises)
 
 
 @router.put(

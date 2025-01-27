@@ -5,6 +5,7 @@ import asyncpg
 from asyncpg import Pool, Connection
 from fastapi import Depends
 
+from trainings_app.logging.main import main_logger
 from trainings_app.settings import settings
 from trainings_app.repositories.base import BaseRepository
 from trainings_app.exceptions.exceptions import UninitializedDatabasePoolError
@@ -15,7 +16,11 @@ class AsyncpgPool:
 
     @classmethod
     async def setup(cls) -> None:
-        cls.db_pool = await asyncpg.create_pool(settings.postgres_dsn)
+        try:
+            cls.db_pool = await asyncpg.create_pool(settings.postgres_dsn)
+        except UninitializedDatabasePoolError as e:
+            main_logger.error(f"Postgres initialisation Error: {e}")
+            raise UninitializedDatabasePoolError()
 
     @classmethod
     async def get_pool(cls) -> Pool:
@@ -46,3 +51,5 @@ def get_repo(repo_type: Type[BaseRepository]) -> Callable[[Connection], BaseRepo
         return repo_type(conn=conn)
 
     return inner
+
+

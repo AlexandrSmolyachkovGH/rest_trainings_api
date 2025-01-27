@@ -23,7 +23,7 @@ class TrainingExerciseRepository(BaseRepository):
             repo_logger.error(f"Convert to model Error: {str(e)}")
             raise ConvertRecordError(record=record, error_detail=f"{str(e)}")
 
-    async def create(self, arg: CreateTrainingExercise) -> GetTrainingExercise:
+    async def create(self, arg: dict) -> GetTrainingExercise:
         keys, values, indexes = self.data_from_dict(arg)
         query = f"""
             INSERT INTO trainings_exercises ({', '.join(keys)})

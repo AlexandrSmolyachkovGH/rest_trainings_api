@@ -17,13 +17,7 @@ class BaseRepository(abc.ABC):
         record = await self.conn.fetchrow(query, *args)
         if not record:
             repo_logger.error(f"The fetchrow_or_404 Error. No record found for the query.")
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail={
-                    "error": "ResourceNotFound",
-                    "message": "No record found for the query."
-                }
-            )
+            raise RecordNotFoundError()
         return record
 
     @staticmethod

@@ -25,7 +25,7 @@ class UserRepository(BaseRepository):
             repo_logger.error(f"Convert to model Error: {str(e)}")
             raise ConvertRecordError(record=record, error_detail=f"{str(e)}")
 
-    async def create(self, user: CreateUser) -> GetUser:
+    async def create(self, user: dict) -> GetUser:
         keys, values, indexes = self.data_from_dict(user)
         query = f"""
             INSERT INTO users ({', '.join(keys)})
