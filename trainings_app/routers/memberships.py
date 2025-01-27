@@ -12,11 +12,11 @@ router = APIRouter(prefix='/memberships', tags=['memberships'])
     path='/',
     response_model=list[GetMembership],
     description="Retrieve list of memberships",
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 async def get_memberships(
         access_level: Annotated[Optional[str], Query(description="Filter by access level")] = None,
-        repo=Depends(get_repo(MembershipRepository))
+        repo: MembershipRepository = Depends(get_repo(MembershipRepository)),
 ):
     return await repo.get_memberships(access_level)
 
@@ -25,11 +25,11 @@ async def get_memberships(
     path='/{membership_id}',
     response_model=GetMembership,
     description="Retrieve the membership by ID",
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 async def get_membership(
         membership_id: Annotated[int, Path(gt=0)],
-        repo=Depends(get_repo(MembershipRepository))
+        repo: MembershipRepository = Depends(get_repo(MembershipRepository)),
 ):
     return await repo.get(membership_id)
 
@@ -38,11 +38,11 @@ async def get_membership(
     path='/',
     response_model=GetMembership,
     description="Create the membership",
-    status_code=status.HTTP_201_CREATED
+    status_code=status.HTTP_201_CREATED,
 )
 async def create_membership(
         membership_obj: CreateMembership,
-        repo=Depends(get_repo(MembershipRepository))
+        repo: MembershipRepository = Depends(get_repo(MembershipRepository)),
 ):
     membership_dict = membership_obj.dict()
     return await repo.create(membership_dict)
@@ -52,11 +52,11 @@ async def create_membership(
     path='/{membership_id}',
     response_model=GetMembership,
     description="Delete the membership",
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 async def delete_membership(
         membership_id: Annotated[int, Path(gt=0)],
-        repo=Depends(get_repo(MembershipRepository))
+        repo: MembershipRepository = Depends(get_repo(MembershipRepository)),
 ):
     return await repo.delete(membership_id)
 
@@ -65,12 +65,12 @@ async def delete_membership(
     path='/{membership_id}',
     response_model=GetMembership,
     description="Complete update of the membership record",
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 async def put_membership(
         membership_id: Annotated[int, Path(gt=0)],
         data_for_update: PutMembership,
-        repo=Depends(get_repo(MembershipRepository))
+        repo: MembershipRepository = Depends(get_repo(MembershipRepository)),
 ):
     return await repo.update(membership_id, data_for_update.dict())
 
@@ -79,12 +79,12 @@ async def put_membership(
     path='/{membership_id}',
     response_model=GetMembership,
     description="Partial update of the membership record",
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 async def patch_membership(
         membership_id: Annotated[int, Path(gt=0)],
         data_for_update: PatchMembership,
-        repo=Depends(get_repo(MembershipRepository))
+        repo: MembershipRepository = Depends(get_repo(MembershipRepository)),
 ):
     dict_for_update = data_for_update.model_dump(exclude_unset=True, exclude_defaults=True)
     return await repo.update(membership_id, dict_for_update)

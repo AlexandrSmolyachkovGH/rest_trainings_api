@@ -1,8 +1,9 @@
 from typing import Optional
+from pydantic import ValidationError
 
 from trainings_app.repositories.base import BaseRepository
 from trainings_app.schemas.clients import CreateClient, GetClient
-from trainings_app.exceptions.exceptions import ConvertRecordError, AttrError, CreateRecordError
+from trainings_app.exceptions.exceptions import ConvertRecordError
 from trainings_app.logging.repositories import repo_logger
 from trainings_app.db.fields.clients import ClientFields
 
@@ -11,7 +12,7 @@ class ClientRepository(BaseRepository):
     fields = ClientFields
 
     @staticmethod
-    def get_client_from_record(record: dict) -> GetClient:
+    def __get_client_from_record(record: dict) -> GetClient:
         """Retrieve GetClient model from dict data"""
 
         if not record:
@@ -19,9 +20,9 @@ class ClientRepository(BaseRepository):
             raise ConvertRecordError(record=record, error_detail="No record found to convert")
         try:
             return GetClient(**record)
-        except AttrError as e:
+        except ValidationError as e:
             repo_logger.error(f"Convert to model Error: {str(e)}")
-            raise ConvertRecordError(record=record, error_detail="Invalid data for conversion")
+            raise ConvertRecordError(record=record, error_detail=f"{str(e)}")
 
     async def create(self, client: CreateClient) -> GetClient:
         keys, values, indexes = self.data_from_dict(client)
@@ -31,12 +32,8 @@ class ClientRepository(BaseRepository):
                 VALUES ({values_clause})
                 RETURNING {self.fields.get_fields_str()};
             """
-        try:
-            client_record = await self.db.fetchrow(query, *values)
-        except CreateRecordError as e:
-            repo_logger.error(f"Creation Error: {str(e)}")
-            raise CreateRecordError()
-        return self.get_client_from_record(client_record)
+        client_record = await self.fetchrow_or_404(query, *values)
+        return self.__get_client_from_record(client_record)
 
     async def get(self, client_id: int) -> GetClient:
         query = f"""
@@ -45,7 +42,7 @@ class ClientRepository(BaseRepository):
             WHERE id = $1;
         """
         client_record = await self.fetchrow_or_404(query, client_id)
-        return self.get_client_from_record(client_record)
+        return self.__get_client_from_record(client_record)
 
     async def get_clients(self, filter_params: Optional[dict] = None) -> list[GetClient]:
         query = f"""
@@ -62,7 +59,8 @@ class ClientRepository(BaseRepository):
         query += ';'
         clients_data = await self.db.fetch(query, *values)
         if not clients_data:
-            return []
+            repo_logger.error(f"No relevant records Error")
+            raise RecordNotFoundError(f"No relevant records")
         return [GetClient(**client) for client in clients_data]
 
     async def delete(self, client_id: int) -> GetClient:
@@ -72,13 +70,13 @@ class ClientRepository(BaseRepository):
             RETURNING {self.fields.get_fields_str()};
         """
         deleted_client = await self.fetchrow_or_404(query, client_id)
-        return self.get_client_from_record(deleted_client)
+        return self.__get_client_from_record(deleted_client)
 
     async def update(self, client_id: int, update_data: dict) -> GetClient:
         keys, values, indexes = self.data_from_dict(update_data)
         if not values:
             repo_logger.error(f"Invalid update data")
-            raise AttrError("Invalid update data")
+            raise ValidationError("Invalid update data")
         values.append(client_id)
         set_clause = self.make_set_clause(keys=keys, indexes=indexes)
         query = f"""
@@ -88,4 +86,4 @@ class ClientRepository(BaseRepository):
             RETURNING {self.fields.get_fields_str()};
         """
         updated_client = await self.fetchrow_or_404(query, *values)
-        return self.get_client_from_record(updated_client)
+        return self.__get_client_from_record(updated_client)

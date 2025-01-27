@@ -1,20 +1,29 @@
 import abc
+from asyncpg import Connection
+
 from trainings_app.logging.repositories import repo_logger
 from trainings_app.exceptions.exceptions import AttrError, RecordNotFoundError
 
 
+
 class BaseRepository(abc.ABC):
 
-    def __init__(self, conn):
+    def __init__(self, conn: Connection):
         self.conn = conn
 
     async def fetchrow_or_404(self, query: str, *args) -> dict:
         """Check for data retrieval. If no data is found, raise a 404 error."""
 
-        record = await self.db.fetchrow(query, *args)
+        record = await self.conn.fetchrow(query, *args)
         if not record:
             repo_logger.error(f"The fetchrow_or_404 Error. No record found for the query.")
-            raise RecordNotFoundError()
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "error": "ResourceNotFound",
+                    "message": "No record found for the query."
+                }
+            )
         return record
 
     @staticmethod

@@ -12,11 +12,11 @@ router = APIRouter(prefix='/exercises', tags=['exercises'])
     path='/',
     response_model=list[GetExercise],
     description='Retrieve list of exercises',
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 async def get_exercises_list(
         filter_model: FilterExercise = Depends(),
-        exercise_repo=Depends(get_repo(ExerciseRepository))
+        exercise_repo: ExerciseRepository = Depends(get_repo(ExerciseRepository)),
 ):
     filter_dict = filter_model.model_dump(exclude_defaults=True) if filter_model else None
     return await exercise_repo.get_exercises(filter_dict)
@@ -26,11 +26,11 @@ async def get_exercises_list(
     path='/{exercise_id}',
     response_model=GetExercise,
     description='Retrieve the exercise',
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 async def get_exercise(
         exercise_id: int,
-        exercise_repo=Depends(get_repo(ExerciseRepository))
+        exercise_repo: ExerciseRepository = Depends(get_repo(ExerciseRepository)),
 ):
     return await exercise_repo.get(exercise_id)
 
@@ -39,11 +39,11 @@ async def get_exercise(
     path='/',
     response_model=GetExercise,
     description='Create the exercise',
-    status_code=status.HTTP_201_CREATED
+    status_code=status.HTTP_201_CREATED,
 )
 async def create_exercise(
         model: CreateExercise,
-        exercise_repo=Depends(get_repo(ExerciseRepository))
+        exercise_repo: ExerciseRepository = Depends(get_repo(ExerciseRepository)),
 ):
     return await exercise_repo.create(model.dict())
 
@@ -52,12 +52,12 @@ async def create_exercise(
     path='/{exercise_id}',
     response_model=GetExercise,
     description='Complete update of the exercise record',
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 async def put_exercise(
         exercise_id: Annotated[int, Path(gt=0)],
         update_model: PutExercise,
-        exercise_repo=Depends(get_repo(ExerciseRepository))
+        exercise_repo: ExerciseRepository = Depends(get_repo(ExerciseRepository)),
 ):
     return await exercise_repo.update(exercise_id, update_model.dict())
 
@@ -66,12 +66,12 @@ async def put_exercise(
     path='/{exercise_id}',
     response_model=GetExercise,
     description='Partial update of the exercise record',
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 async def patch_exercise(
         exercise_id: Annotated[int, Path(gt=0)],
         update_model: PatchExercise,
-        exercise_repo=Depends(get_repo(ExerciseRepository))
+        exercise_repo: ExerciseRepository = Depends(get_repo(ExerciseRepository)),
 ):
     update_dict = update_model.model_dump(exclude_defaults=True, exclude_unset=True)
     return await exercise_repo.update(exercise_id, update_dict)
@@ -81,10 +81,10 @@ async def patch_exercise(
     path='/{exercise_id}',
     response_model=GetExercise,
     description='Delete the exercise',
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 async def delete_exercise(
         exercise_id: Annotated[int, Path(gt=0)],
-        exercise_repo=Depends(get_repo(ExerciseRepository))
+        exercise_repo: ExerciseRepository = Depends(get_repo(ExerciseRepository)),
 ):
     return await exercise_repo.delete(exercise_id)

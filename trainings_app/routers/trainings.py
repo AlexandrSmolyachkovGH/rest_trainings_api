@@ -12,11 +12,11 @@ router = APIRouter(prefix='/trainings', tags=['trainings'])
     path='/',
     response_model=list[GetTraining],
     description='Retrieve list of trainings',
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 async def get_trainings_list(
         filter_model: FilterTraining = Depends(),
-        train_repo=Depends(get_repo(TrainingRepository))
+        train_repo: TrainingRepository = Depends(get_repo(TrainingRepository)),
 ):
     filter_dict = filter_model.model_dump(exclude_defaults=True) if filter_model else None
     return await train_repo.get_trainings(filter_dict)
@@ -26,11 +26,11 @@ async def get_trainings_list(
     path='/{train_id}',
     response_model=GetTraining,
     description='Retrieve the training',
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 async def get_training(
         train_id: Annotated[int, Path(gt=0)],
-        train_repo=Depends(get_repo(TrainingRepository))
+        train_repo: TrainingRepository = Depends(get_repo(TrainingRepository)),
 ):
     return await train_repo.get(train_id)
 
@@ -39,11 +39,11 @@ async def get_training(
     path='/',
     response_model=GetTraining,
     description='Create the training',
-    status_code=status.HTTP_201_CREATED
+    status_code=status.HTTP_201_CREATED,
 )
 async def create_training(
         create_model: CreateTraining,
-        train_repo=Depends(get_repo(TrainingRepository))
+        train_repo: TrainingRepository = Depends(get_repo(TrainingRepository)),
 ):
     return await train_repo.create(create_model.dict())
 
@@ -52,12 +52,12 @@ async def create_training(
     path='/{train_id}',
     response_model=GetTraining,
     description='Complete update of the training record',
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 async def put_training(
         train_id: Annotated[int, Path(gt=0)],
         update_model: PutTraining,
-        train_repo=Depends(get_repo(TrainingRepository))
+        train_repo: TrainingRepository = Depends(get_repo(TrainingRepository)),
 ):
     return await train_repo.update(train_id, update_model.dict())
 
@@ -66,12 +66,12 @@ async def put_training(
     path='/{train_id}',
     response_model=GetTraining,
     description='Partial update of the training record',
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 async def patch_training(
         train_id: Annotated[int, Path(gt=0)],
         update_model: PatchTraining,
-        train_repo=Depends(get_repo(TrainingRepository))
+        train_repo: TrainingRepository = Depends(get_repo(TrainingRepository)),
 ):
     update_dict = update_model.model_dump(exclude_defaults=True, exclude_unset=True)
     return await train_repo.update(train_id, update_dict)
@@ -81,10 +81,10 @@ async def patch_training(
     path='/{train_id}',
     response_model=GetTraining,
     description='Delete the training',
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 async def delete_training(
         train_id: Annotated[int, Path(gt=0)],
-        train_repo=Depends(get_repo(TrainingRepository))
+        train_repo: TrainingRepository = Depends(get_repo(TrainingRepository)),
 ):
     return await train_repo.delete(train_id)

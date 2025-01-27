@@ -31,54 +31,54 @@ class CreateExercise(BaseModel):
     title: str = Field(
         max_length=50,
         description='Unique title of the exercise',
-        example='Push-ups'
+        example='Push-ups',
     )
     description: Optional[str] = Field(
         default=None,
         description='Detailed description of the exercise',
-        example='A basic exercise for arms'
+        example='A basic exercise for arms',
     )
     muscle_group: Optional[MuscleGroupEnum] = Field(
         default=None, description='Target muscle group for the exercise',
-        example='ARMS'
+        example='ARMS',
     )
     equipment_required: bool = Field(
         default=False,
         description='Indicates if the exercise requires equipment',
-        example=False
+        example=False,
     )
     complexity_lvl: ComplexityEnum = Field(
         default=ComplexityEnum.BEGINNER,
         description='Complexity level of the exercise',
-        example='BEGINNER'
+        example='BEGINNER',
     )
 
 
 class GetExercise(BaseModel):
     id: int = Field(
         description='Unique ID for the exercise',
-        example=1
+        example=1,
     )
     title: str = Field(
         max_length=50,
         description='Unique title of the exercise',
-        example='Push-ups'
+        example='Push-ups',
     )
     description: str = Field(
         description='Detailed description of the exercise',
-        example='A basic exercise for arms'
+        example='A basic exercise for arms',
     )
     muscle_group: Optional[MuscleGroupEnum] = Field(
         description='Target muscle group for the exercise',
-        example='ARMS'
+        example='ARMS',
     )
     equipment_required: bool = Field(
         description='Indicates if the exercise requires equipment',
-        example=False
+        example=False,
     )
     complexity_lvl: ComplexityEnum = Field(
         description='Complexity level of the exercise',
-        example='BEGINNER'
+        example='BEGINNER',
     )
 
 
@@ -86,27 +86,27 @@ class PutExercise(BaseModel):
     title: str = Field(
         max_length=50,
         description='Unique title of the exercise',
-        example='Push-ups'
+        example='Push-ups',
     )
     description: Optional[str] = Field(
         default=None,
         description='Detailed description of the exercise',
-        example='A basic exercise for arms'
+        example='A basic exercise for arms',
     )
     muscle_group: Optional[MuscleGroupEnum] = Field(
         default=None,
         description='Target muscle group for the exercise',
-        example='ARMS'
+        example='ARMS',
     )
     equipment_required: bool = Field(
         default=False,
         description='Indicates if the exercise requires equipment',
-        example=False
+        example=False,
     )
     complexity_lvl: ComplexityEnum = Field(
         default=ComplexityEnum.BEGINNER,
         description='Complexity level of the exercise',
-        example='BEGINNER'
+        example='BEGINNER',
     )
 
 
@@ -115,27 +115,27 @@ class PatchExercise(BaseModel):
         default=None,
         max_length=50,
         description='Unique title of the exercise',
-        example='Push-ups'
+        example='Push-ups',
     )
     description: Optional[str] = Field(
         default=None,
         description='Detailed description of the exercise',
-        example='A basic exercise for arms'
+        example='A basic exercise for arms',
     )
     muscle_group: Optional[MuscleGroupEnum] = Field(
         default=None,
         description='Target muscle group for the exercise',
-        example='ARMS'
+        example='ARMS',
     )
     equipment_required: Optional[bool] = Field(
         default=False,
         description='Indicates if the exercise requires equipment',
-        example=False
+        example=False,
     )
     complexity_lvl: Optional[ComplexityEnum] = Field(
         default=ComplexityEnum.BEGINNER,
         description='Complexity level of the exercise',
-        example='BEGINNER'
+        example='BEGINNER',
     )
 
 
@@ -143,30 +143,31 @@ class FilterExercise(BaseModel):
     id: Optional[int] = Field(
         default=None,
         description='Unique ID for the exercise',
-        example=1)
+        example=1,
+    )
     title: Optional[str] = Field(
         default=None,
         max_length=50,
         description='Unique title of the exercise',
-        example='Push-ups'
+        example='Push-ups',
     )
     description: Optional[str] = Field(
         default=None,
         description='Detailed description of the exercise',
-        example='A basic exercise for arms'
+        example='A basic exercise for arms',
     )
     muscle_group: Optional[MuscleGroupEnum] = Field(
         default=None,
         description='Target muscle group for the exercise',
-        example='ARMS'
+        example='ARMS',
     )
     equipment_required: Optional[bool] = Field(
         default=False,
         description='Indicates if the exercise requires equipment',
-        example=False
+        example=False,
     )
     complexity_lvl: Optional[ComplexityEnum] = Field(
         default=ComplexityEnum.BEGINNER,
         description='Complexity level of the exercise',
-        example='BEGINNER'
+        example='BEGINNER',
     )
