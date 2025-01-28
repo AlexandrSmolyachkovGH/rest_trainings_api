@@ -2,12 +2,15 @@ import json
 
 from fastapi import Request, status, Response
 from fastapi.responses import JSONResponse
+
 from trainings_app.exceptions.exceptions import RecordNotFoundError, ConvertRecordError
+from trainings_app.logging.main import main_logger
 
 
 def record_not_found_handler(request: Request, exc: RecordNotFoundError) -> Response:
     """Handler for the RecordNotFoundError"""
     detail = exc.detail
+    main_logger.error(f"{str(exc)}")
     if isinstance(detail, str):
         try:
             json.loads(detail)
@@ -30,7 +33,7 @@ def record_not_found_handler(request: Request, exc: RecordNotFoundError) -> Resp
 
 def convert_record_handler(request: Request, exc: ConvertRecordError) -> Response:
     """Handler for the ConvertRecordError"""
-
+    main_logger.error(f"{str(exc)}")
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
         content={

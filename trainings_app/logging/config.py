@@ -56,7 +56,7 @@ def get_logger_level(env_var: str) -> str:
     In case of incorrect or missing values - returns default == 'ERROR'.
     """
 
-    lvl = os.getenv(env_var, 'ERROR')
+    lvl = os.getenv(env_var, 'DEBUG')
     if not check_logger(lvl):
         print(f"Invalid log level '{lvl} in the env file. Defaulting to 'ERROR'")
         lvl = 'ERROR'

@@ -68,6 +68,48 @@ class CreateTraining(BaseModel):
     )
 
 
+class CreateTrainingWithExerciseIDs(BaseModel):
+    client_id: int = Field(
+        description='Client ID associated with the training',
+        example=123,
+    )
+    training_type: Optional[TrainingTypeEnum] = Field(
+        default=TrainingTypeEnum.OTHER,
+        description='Type of training',
+        example='CARDIO',
+    )
+    title: str = Field(
+        min_length=1,
+        max_length=200,
+        description='Title of the training',
+        example='Morning Cardio',
+    )
+    intensity: Optional[IntensityEnum] = Field(
+        default=IntensityEnum.VERY_LOW,
+        description='Intensity level of the training',
+        example='MEDIUM',
+    )
+    duration_min: int = Field(
+        default=45,
+        description='Duration of the training session in minutes',
+        example=45,
+    )
+    date_of_train: Optional[date] = Field(
+        default=None,
+        description='Date of the training session',
+        example='2024-12-25',
+    )
+    description: Optional[str] = Field(
+        default=None,
+        description='Detailed description of the training',
+        example='A cardio session focusing on endurance.',
+    )
+    exercises: Optional[list] = Field(
+        default=None,
+        description='Unique exercise IDs',
+        example='[1, 12, 5, 81]',
+    )
+
 class GetTraining(BaseModel):
     id: int = Field(
         ge=0,

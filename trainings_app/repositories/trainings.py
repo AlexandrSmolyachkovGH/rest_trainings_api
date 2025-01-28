@@ -5,9 +5,10 @@ from trainings_app.db.fields.trainings import TrainingFields
 from trainings_app.db.fields.exercises import ExerciseFields
 from trainings_app.repositories.base import BaseRepository
 from trainings_app.schemas.exercises import ExerciseIDs
-from trainings_app.schemas.trainings import CreateTraining, GetTraining
+from trainings_app.schemas.trainings import CreateTraining, GetTraining, CreateTrainingWithExerciseIDs
 from trainings_app.exceptions.exceptions import ConvertRecordError
 from trainings_app.logging.repositories import repo_logger
+from trainings_app.logging.main import main_logger
 
 
 class TrainingRepository(BaseRepository):
@@ -109,3 +110,32 @@ class TrainingRepository(BaseRepository):
                 """
                 await self.conn.execute(train_ex_query, *values_data)
             return self.__get_training_from_record(train_record)
+
+    async def create_train_with_exercise_ids(self, tr_data: dict) -> GetTraining:
+        ex_data = tr_data.get('exercises')
+        tr_data.__delitem__('exercises')
+        keys, values, indexes = self.data_from_dict(tr_data)
+        query = f"""
+            INSERT INTO trainings ({', '.join(keys)})
+            VALUES ({', '.join([f'${i}' for i in indexes])})
+            RETURNING {self.fields.get_fields_str()};
+        """
+        async with self.conn.transaction():
+            train_record = await self.fetchrow_or_404(query, *values)
+            if ex_data:
+                values_clause = []
+                values_data = []
+                for ex_id in ex_data:
+                    values_clause.append(f"(${len(values_data) + 1}, ${len(values_data) + 2}, ${len(values_data) + 3})")
+                    values_data.extend([train_record['id'], ex_id, len(values_clause)])
+                values_clause_str = ',\n'.join(values_clause)
+                train_ex_query = f"""
+                    INSERT INTO Trainings_exercises (training_id, exercise_id, order_in_training)
+                    VALUES 
+                        {values_clause_str};
+                """
+                await self.conn.execute(train_ex_query, *values_data)
+            return self.__get_training_from_record(train_record)
+
+
+

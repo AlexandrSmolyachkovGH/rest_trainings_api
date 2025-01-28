@@ -3,8 +3,10 @@ from typing import Annotated
 
 from trainings_app.db.connection import get_repo
 from trainings_app.schemas.exercises import ExerciseIDs
-from trainings_app.schemas.trainings import CreateTraining, GetTraining, FilterTraining, PutTraining, PatchTraining
+from trainings_app.schemas.trainings import CreateTraining, GetTraining, FilterTraining, PutTraining, PatchTraining, \
+    CreateTrainingWithExerciseIDs
 from trainings_app.repositories.trainings import TrainingRepository
+from trainings_app.logging.main import main_logger
 
 router = APIRouter(prefix='/trainings', tags=['trainings'])
 
@@ -50,7 +52,7 @@ async def create_training(
 
 
 @router.post(
-    path='/training_with_exercises',
+    path='/exercises',
     response_model=GetTraining,
     description='Create the training',
     status_code=status.HTTP_201_CREATED,
@@ -61,6 +63,22 @@ async def create_training_with_exercises(
         train_repo: TrainingRepository = Depends(get_repo(TrainingRepository)),
 ):
     return await train_repo.create_train_with_ex(train_model.dict(), ex_ids_model.exercises)
+
+
+@router.post(
+    path='/exercise-ids',
+    response_model=GetTraining,
+    description='Create the training with exercises',
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_training_with_exercise_ids(
+        train_model: CreateTrainingWithExerciseIDs,
+        train_repo: TrainingRepository = Depends(get_repo(TrainingRepository)),
+):
+    try:
+        return await train_repo.create_train_with_ex(train_model.dict())
+    except Exception as e:
+        main_logger.error(f"{str(e)}")
 
 
 @router.put(
