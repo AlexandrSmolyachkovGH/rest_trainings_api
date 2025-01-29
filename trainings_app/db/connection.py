@@ -5,7 +5,7 @@ import asyncpg
 from asyncpg import Pool, Connection
 from fastapi import Depends
 
-from trainings_app.logging.main import main_logger
+from trainings_app.custom_loggers.main import main_logger
 from trainings_app.settings import settings
 from trainings_app.repositories.base import BaseRepository
 from trainings_app.exceptions.exceptions import UninitializedDatabasePoolError

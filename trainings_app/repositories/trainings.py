@@ -7,8 +7,8 @@ from trainings_app.repositories.base import BaseRepository
 from trainings_app.schemas.exercises import ExerciseIDs
 from trainings_app.schemas.trainings import CreateTraining, GetTraining, CreateTrainingWithExerciseIDs
 from trainings_app.exceptions.exceptions import ConvertRecordError
-from trainings_app.logging.repositories import repo_logger
-from trainings_app.logging.main import main_logger
+from trainings_app.custom_loggers.repositories import repo_logger
+from trainings_app.custom_loggers.main import main_logger
 
 
 class TrainingRepository(BaseRepository):
@@ -112,8 +112,7 @@ class TrainingRepository(BaseRepository):
             return self.__get_training_from_record(train_record)
 
     async def create_train_with_exercise_ids(self, tr_data: dict) -> GetTraining:
-        ex_data = tr_data.get('exercises')
-        tr_data.__delitem__('exercises')
+        ex_data = tr_data.pop('exercises', None)
         keys, values, indexes = self.data_from_dict(tr_data)
         query = f"""
             INSERT INTO trainings ({', '.join(keys)})

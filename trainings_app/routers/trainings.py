@@ -6,7 +6,6 @@ from trainings_app.schemas.exercises import ExerciseIDs
 from trainings_app.schemas.trainings import CreateTraining, GetTraining, FilterTraining, PutTraining, PatchTraining, \
     CreateTrainingWithExerciseIDs
 from trainings_app.repositories.trainings import TrainingRepository
-from trainings_app.logging.main import main_logger
 
 router = APIRouter(prefix='/trainings', tags=['trainings'])
 
@@ -75,10 +74,7 @@ async def create_training_with_exercise_ids(
         train_model: CreateTrainingWithExerciseIDs,
         train_repo: TrainingRepository = Depends(get_repo(TrainingRepository)),
 ):
-    try:
-        return await train_repo.create_train_with_ex(train_model.dict())
-    except Exception as e:
-        main_logger.error(f"{str(e)}")
+    return await train_repo.create_train_with_exercise_ids(train_model.dict())
 
 
 @router.put(

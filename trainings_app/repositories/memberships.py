@@ -5,7 +5,7 @@ from trainings_app.db.fields.memberships import MembershipFields
 from trainings_app.schemas.memberships import CreateMembership, GetMembership
 from trainings_app.repositories.base import BaseRepository
 from trainings_app.exceptions.exceptions import ConvertRecordError
-from trainings_app.logging.repositories import repo_logger
+from trainings_app.custom_loggers.repositories import repo_logger
 
 
 class MembershipRepository(BaseRepository):

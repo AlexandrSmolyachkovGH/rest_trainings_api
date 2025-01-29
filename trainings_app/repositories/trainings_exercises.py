@@ -2,7 +2,7 @@ from typing import Optional
 from pydantic import ValidationError
 
 from trainings_app.exceptions.exceptions import ConvertRecordError, CreateRecordError
-from trainings_app.logging.repositories import repo_logger
+from trainings_app.custom_loggers.repositories import repo_logger
 from trainings_app.repositories.base import BaseRepository
 from trainings_app.schemas.trainings_exercises import CreateTrainingExercise, GetTrainingExercise
 from trainings_app.db.fields.trainings_exercises import TrainingExerciseFields

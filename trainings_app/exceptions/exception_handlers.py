@@ -4,7 +4,7 @@ from fastapi import Request, status, Response
 from fastapi.responses import JSONResponse
 
 from trainings_app.exceptions.exceptions import RecordNotFoundError, ConvertRecordError
-from trainings_app.logging.main import main_logger
+from trainings_app.custom_loggers.main import main_logger
 
 
 def record_not_found_handler(request: Request, exc: RecordNotFoundError) -> Response:
