@@ -116,13 +116,13 @@ class GetClient(BaseModel):
         description="Date of client birth",
         example="2024-12-25",
     )
-    weight_kg: float = Field(
+    weight_kg: Optional[float] = Field(
         ge=0,
         le=500,
         description='The weight of the client in kilograms (up to 2 decimal places)',
         example=70.5,
     )
-    height_cm: float = Field(
+    height_cm: Optional[float] = Field(
         ge=0,
         le=500,
         description='The height of the client in centimeters (up to 2 decimal places)',

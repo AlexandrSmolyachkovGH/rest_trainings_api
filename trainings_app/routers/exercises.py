@@ -18,7 +18,7 @@ async def get_exercises_list(
         filter_model: FilterExercise = Depends(),
         exercise_repo: ExerciseRepository = Depends(get_repo(ExerciseRepository)),
 ):
-    filter_dict = filter_model.model_dump(exclude_defaults=True) if filter_model else None
+    filter_dict = filter_model.model_dump(exclude_defaults=True, exclude_unset=True) if filter_model else None
     return await exercise_repo.get_exercises(filter_dict)
 
 

@@ -170,12 +170,12 @@ class FilterExercise(BaseModel):
         example='ARMS',
     )
     equipment_required: Optional[bool] = Field(
-        default=False,
+        default=None,
         description='Indicates if the exercise requires equipment',
         example=False,
     )
     complexity_lvl: Optional[ComplexityEnum] = Field(
-        default=ComplexityEnum.BEGINNER,
+        default=None,
         description='Complexity level of the exercise',
         example='BEGINNER',
     )

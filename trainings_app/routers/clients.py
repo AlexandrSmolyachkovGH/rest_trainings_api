@@ -18,7 +18,7 @@ async def create_client(
         client: CreateClient,
         client_repo: ClientRepository = Depends(get_repo(ClientRepository)),
 ):
-    return await client_repo.create(client.dict())
+    return await client_repo.create(client.model_dump(exclude_unset=True, exclude_defaults=True))
 
 
 @router.get(
