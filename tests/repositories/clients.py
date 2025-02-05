@@ -1,6 +1,6 @@
 import unittest
-from unittest.mock import AsyncMock, MagicMock, patch
-from datetime import datetime
+import os
+from unittest.mock import AsyncMock, patch
 
 from trainings_app.schemas.clients import GetClient, GenderEnum, ClientStatusEnum
 from trainings_app.repositories.clients import ClientRepository
@@ -35,26 +35,15 @@ class TestClientRepository(unittest.IsolatedAsyncioTestCase):
             'status': ClientStatusEnum.ACTIVE,
         }
 
-    # async def setUp(self):
-    #     """Set up the mock connection"""
-    #     self.mock_pool = MagicMock()
-    #     self.mock_connection = AsyncMock()
-    #     self.mock_pool.acquire.return_value.__aenter__.return_value = self.mock_connection
-    #     self.repo = ClientRepository(self.mock_pool)
-
     async def asyncSetUp(self):
         self.repo = ClientRepository(None)
 
-    #@patch.object(ClientRepository, 'fetchrow_or_404', new_callable=AsyncMock)
     @patch.object(ClientRepository, 'create', new_callable=AsyncMock)
     async def test_create_client_success(self, mock_create):
         mock_create.return_value = GetClient(**TestClientRepository.create_db_response)
-        #mock_fetchrow_or_404.return_value = TestClientRepository.create_db_response
-
         created_client = await self.repo.create(TestClientRepository.create_input_data)
         self.assertIsInstance(created_client, GetClient)
         self.assertEqual(created_client.dict()['id'], 85)
-
 
 
 

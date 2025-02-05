@@ -27,5 +27,13 @@ DB_CONFIG = {
     "POSTGRES_HOST": os.getenv("POSTGRES_HOST"),
     "POSTGRES_PORT": os.getenv("POSTGRES_PORT"),
 }
+TEST_DB_CONFIG = {
+    "POSTGRES_USER": os.getenv("TEST_POSTGRES_USER"),
+    "POSTGRES_PASSWORD": os.getenv("TEST_POSTGRES_PASSWORD"),
+    "POSTGRES_DB": os.getenv("TEST_POSTGRES_DB"),
+    "POSTGRES_HOST": os.getenv("TEST_POSTGRES_HOST"),
+    "POSTGRES_PORT": os.getenv("TEST_POSTGRES_PORT"),
+}
 
 settings = Settings(**DB_CONFIG)
+settings_test_db = Settings(**TEST_DB_CONFIG)
