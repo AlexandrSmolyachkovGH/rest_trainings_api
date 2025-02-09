@@ -1,86 +1,125 @@
 import pytest
 
 from tests.config_db_test import get_repo
-from trainings_app.repositories.users import UserRepository
-
-user_repo = get_repo(UserRepository)
+from trainings_app.repositories.clients import ClientRepository
 
 
 @pytest.mark.asyncio
-async def test_create_user():
-    user_data = {
-        "username": "test001_user",
-        "password_hash": "test001_user_password",
-        "email": "test001_user@example.com",
-        "role": "USER",
+@pytest.mark.run(order=14)
+async def test_create_client(get_repo):
+    client_repo = get_repo(ClientRepository)
+    client_data = {
+        "user_id": 1,
+        "membership_id": 1,
+        "first_name": "Test client name",
+        "last_name": "Test client last name",
+        "phone_number": "+1234567890",
+        "gender": "MALE",
+        "date_of_birth": "1999-12-15",
+        "weight_kg": 99.1,
+        "height_cm": 195.2,
+        "status": "ACTIVE",
     }
-    create_user = await user_repo.create(user_data)
-    assert create_user is not None
-    assert create_user["username"] == "test001_user"
-    assert create_user["id"] > 0
+    create_client = await client_repo.create(client_data)
+    assert create_client is not None
+    assert create_client["user_id"] == 1
+    assert create_client["membership_id"] == 1
+    assert create_client["id"] == 1
+    assert create_client["phone_number"] == '+1234567890'
+    assert create_client["status"] == "ACTIVE"
 
 
 @pytest.mark.asyncio
-async def test_get_user():
-    user_id = 1
-    get_user = await user_repo.get(user_id)
-    assert get_user is not None
-    assert get_user["username"] == "test001_user"
-    assert get_user["id"] == 1
+@pytest.mark.run(order=15)
+async def test_get_client(get_repo):
+    client_repo = get_repo(ClientRepository)
+    client_id = 1
+    get_client = await client_repo.get(client_id)
+    assert get_client is not None
+    assert get_client["first_name"] == "Test client name"
+    assert get_client["id"] == 1
+    assert get_client["user_id"] == 1
+    assert get_client["membership_id"] == 1
 
 
 @pytest.mark.asyncio
-async def test_get_users():
+@pytest.mark.run(order=16)
+async def test_get_clients(get_repo):
+    client_repo = get_repo(ClientRepository)
     filter_dict = {
-        "username": "test001_user",
+        "first_name": "Test client name",
     }
-    get_users = user_repo.get_users(filter_dict)
-    assert isinstance(get_users, list)
-    assert len(get_users) == 1
-    assert get_users[0]["username"] == "test001_user"
+    get_clients = client_repo.get_clients(filter_dict)
+    assert isinstance(get_clients, list)
+    assert len(get_clients) == 1
+    assert get_clients[0]["first_name"] == "Test client name"
+    assert get_clients[0]["id"] == 1
+    assert get_clients[0]["user_id"] == 1
+    assert get_clients[0]["membership_id"] == 1
 
 
 @pytest.mark.asyncio
-async def test_put_user():
-    user_id = 1
-    update_user_data = {
-        # "id": 1,  ???
-        "username": "test01_user",
-        "password_hash": "test01_user_password",
-        "email": "test01_user@example.com",
-        "role": "USER",
+@pytest.mark.run(order=17)
+async def test_put_client(get_repo):
+    client_repo = get_repo(ClientRepository)
+    client_id = 1
+    update_client_data = {
+        "membership_id": 1,
+        "first_name": "Updated FN",
+        "last_name": "Updated LN",
+        "phone_number": "+1234567890",
+        "weight_kg": 99.5,
+        "height_cm": 195.1,
+        "status": "ACTIVE",
     }
-    update_user = await user_repo.put(user_id, update_user_data)
-    assert update_user is not None
-    assert update_user["username"] == "test01_user"
-    assert update_user["id"] == 1
+    update_client = await client_repo.put(client_id, update_client_data)
+    assert update_client is not None
+    assert update_client["first_name"] == "Updated FN"
+    assert update_client["last_name"] == "Updated LN"
+    assert update_client["phone_number"] == "+1234567890"
+    assert update_client["id"] == 1
+    assert update_client["user_id"] == 1
+    assert update_client["membership_id"] == 1
 
 
 @pytest.mark.asyncio
-async def test_patch_user():
-    user_id = 1
-    update_user_data = {
-        "password_hash": "test_user_password",
-        "email": "test_user@example.com",
+@pytest.mark.run(order=18)
+async def test_patch_client(get_repo):
+    client_repo = get_repo(ClientRepository)
+    client_id = 1
+    update_client_data = {
+        "phone_number": "+1230003335",
     }
-    update_user = await user_repo.patch(user_id, update_user_data)
-    assert update_user is not None
-    assert update_user["username"] == "test01_user"
-    assert update_user["id"] == 1
+    update_client = await client_repo.patch(client_id, update_client_data)
+    assert update_client is not None
+    assert update_client["first_name"] == "Updated FN"
+    assert update_client["last_name"] == "Updated LN"
+    assert update_client["phone_number"] == "+1230003335"
+    assert update_client["id"] == 1
+    assert update_client["user_id"] == 1
+    assert update_client["membership_id"] == 1
 
 
 @pytest.mark.asyncio
-async def test_delete_user():
-    extra_user_data = {
-        "username": "test002_user",
-        "password_hash": "test002_user_password",
-        "email": "test002_user@example.com",
-        "role": "USER",
+@pytest.mark.run(order=19)
+async def test_delete_client(get_repo):
+    client_repo = get_repo(ClientRepository)
+    extra_client_data = {
+        "user_id": 3,
+        "membership_id": 1,
+        "first_name": "ExtraUser",
+        "last_name": "ForDeleteTest",
+        "phone_number": "+1234567890",
+        "gender": "MALE",
+        "date_of_birth": "1988-10-25",
+        "weight_kg": 99.1,
+        "height_cm": 195.2,
+        "status": "ACTIVE",
     }
-    extra_user = await user_repo.create(extra_user_data)
-    assert extra_user["id"] == 2
-    extra_user_id = 2
-    delete_user = user_repo.delete(extra_user_id)
-    assert delete_user is not None
-    assert delete_user["id"] == 2
-    assert "002" in delete_user["username"]
+    extra_client = await client_repo.create(extra_client_data)
+    assert extra_client["id"] == 2
+    extra_client_id = 2
+    delete_client = client_repo.delete(extra_client_id)
+    assert delete_client is not None
+    assert delete_client["id"] == 2
+    assert delete_client["first_name"] == "ExtraUser"

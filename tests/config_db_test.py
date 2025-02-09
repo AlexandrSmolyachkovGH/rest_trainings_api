@@ -5,13 +5,11 @@ import pytest
 import asyncpg
 from asyncpg import Connection
 
-from apply_migrations_test_db import migrate_test_db
 from trainings_app.custom_loggers.main import main_logger
 from trainings_app.db.connection import AsyncpgPool
 from trainings_app.exceptions.exceptions import UninitializedDatabasePoolError
 from trainings_app.repositories.base import BaseRepository
 from trainings_app.settings import settings_test_db
-
 
 
 class TestAsyncpgPool(AsyncpgPool):
@@ -27,7 +25,7 @@ class TestAsyncpgPool(AsyncpgPool):
             raise UninitializedDatabasePoolError()
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="function", autouse=True)
 async def db_pool() -> None:
     """
     Creates a pool for the test database.

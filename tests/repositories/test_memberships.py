@@ -3,11 +3,11 @@ import pytest
 from tests.config_db_test import get_repo
 from trainings_app.repositories.memberships import MembershipRepository
 
-memberships_repo = get_repo(MembershipRepository)
-
 
 @pytest.mark.asyncio
+@pytest.mark.run(order=8)
 async def test_create_membership():
+    memberships_repo = get_repo(MembershipRepository)
     memberships_data = {
         "access_level": "STANDARD",
         "description": "Standard access to services",
@@ -21,7 +21,9 @@ async def test_create_membership():
 
 
 @pytest.mark.asyncio
-async def test_get_membership():
+@pytest.mark.run(order=9)
+async def test_get_membership(get_repo):
+    memberships_repo = get_repo(MembershipRepository)
     membership_id = 1
     get_membership = await memberships_repo.get(membership_id)
     assert get_membership is not None
@@ -31,7 +33,9 @@ async def test_get_membership():
 
 
 @pytest.mark.asyncio
-async def test_get_memberships():
+@pytest.mark.run(order=10)
+async def test_get_memberships(get_repo):
+    memberships_repo = get_repo(MembershipRepository)
     filter_param = "STANDARD"
     get_memberships = memberships_repo.get_memberships(filter_param)
     assert isinstance(get_memberships, list)
@@ -41,7 +45,9 @@ async def test_get_memberships():
 
 
 @pytest.mark.asyncio
-async def test_put_membership():
+@pytest.mark.run(order=11)
+async def test_put_membership(get_repo):
+    memberships_repo = get_repo(MembershipRepository)
     membership_id = 1
     update_membership_data = {
         "access_level": "VIP",
@@ -56,7 +62,9 @@ async def test_put_membership():
 
 
 @pytest.mark.asyncio
-async def test_patch_membership():
+@pytest.mark.run(order=12)
+async def test_patch_membership(get_repo):
+    memberships_repo = get_repo(MembershipRepository)
     membership_id = 1
     update_membership_data = {
         "description": "VIP: Full access to all services",
@@ -69,7 +77,9 @@ async def test_patch_membership():
 
 
 @pytest.mark.asyncio
-async def test_delete_membership():
+@pytest.mark.run(order=13)
+async def test_delete_membership(get_repo):
+    memberships_repo = get_repo(MembershipRepository)
     extra_membership_data = {
         "access_level": "STANDARD",
         "description": "STANDARD: Standard access to services",
