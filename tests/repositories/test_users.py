@@ -1,4 +1,5 @@
 import pytest
+import pytest_asyncio
 
 from tests.config_db_test import get_repo
 from trainings_app.repositories.users import UserRepository
@@ -14,12 +15,15 @@ async def test_create_user(get_repo):
         "email": "test001_user@example.com",
         "role": "USER",
     }
-    create_user = await user_repo.create(user_data)
-    assert create_user is not None
-    assert create_user["username"] == "test001_user"
-    assert create_user["email"] == "test001_user@example.com"
-    assert create_user["role"] == "USER"
-    assert create_user["id"] > 0
+    try:
+        create_user = await user_repo.create(user_data)
+        assert create_user is not None
+        assert create_user["username"] == "test001_user"
+        assert create_user["email"] == "test001_user@example.com"
+        assert create_user["role"] == "USER"
+        assert create_user["id"] > 0
+    except Exception as e:
+        pytest.fail(f"User creation failed: {e}")
 
 
 @pytest.mark.asyncio

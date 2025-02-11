@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from yoyo import read_migrations, get_backend
 
-from trainings_app.custom_loggers.test_db_init import test_db_init_logger as logger
+from trainings_app.custom_loggers.test_db import test_db_logger as logger
 from trainings_app.settings import settings_test_db
 
 TEST_MIGRATIONS_PATH = Path("migrations").resolve()
