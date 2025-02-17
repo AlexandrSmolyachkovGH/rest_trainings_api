@@ -29,6 +29,10 @@ class AttrError(ValueError):
     pass
 
 
+class TokenError(ValueError):
+    pass
+
+
 class UninitializedDatabasePoolError(Exception):
     def __init__(self, message="The database connection pool has not been properly initialized."):
         self.message = message

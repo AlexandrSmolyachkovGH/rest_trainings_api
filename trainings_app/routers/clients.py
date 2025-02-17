@@ -1,11 +1,16 @@
-from fastapi import APIRouter, Depends, Path, status
+from fastapi import APIRouter, Depends, Path, status, HTTPException
 from typing import Annotated
 
+from trainings_app.auth.utils.jwt_utils import get_current_token_payload, get_current_auth_user
 from trainings_app.db.connection import get_repo
 from trainings_app.schemas.clients import GetClient, CreateClient, PutClient, PatchClient, ClientFilters
 from trainings_app.repositories.clients import ClientRepository
 
-router = APIRouter(prefix='/clients', tags=['clients'])
+router = APIRouter(
+    prefix='/clients',
+    tags=['clients'],
+    dependencies=[Depends(get_current_token_payload),],
+)
 
 
 @router.post(
@@ -17,7 +22,13 @@ router = APIRouter(prefix='/clients', tags=['clients'])
 async def create_client(
         client: CreateClient,
         client_repo: ClientRepository = Depends(get_repo(ClientRepository)),
+        payload: dict = Depends(get_current_token_payload),
 ):
+    if client.user_id != payload.get('sub') and payload.get('role') == 'USER':
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Invalid ID of the user: {payload.get('sub')}.",
+        )
     return await client_repo.create(client.model_dump(exclude_unset=True, exclude_defaults=True))
 
 

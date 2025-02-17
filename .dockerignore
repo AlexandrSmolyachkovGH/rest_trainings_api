@@ -13,3 +13,4 @@ Thumbs.db
 *.sqlite3
 logs
 logs/
+certs/

@@ -1,4 +1,6 @@
 import os
+from pathlib import Path
+
 import dotenv
 from pydantic import BaseModel, SecretStr
 

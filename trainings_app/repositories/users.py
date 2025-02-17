@@ -1,18 +1,17 @@
 from typing import Optional
 from datetime import datetime
 from pydantic import ValidationError
-from passlib.context import CryptContext
 
 from trainings_app.db.fields.users import UserFields
-from trainings_app.schemas.users import CreateUser, GetUser
+from trainings_app.schemas.users import GetUser
 from trainings_app.repositories.base import BaseRepository
 from trainings_app.exceptions.exceptions import ConvertRecordError
 from trainings_app.custom_loggers.repositories import repo_logger
+from trainings_app.utils.password_hashing import hash_password
 
 
 class UserRepository(BaseRepository):
     fields = UserFields
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
     @staticmethod
     def __get_user_from_record(record: dict) -> GetUser:
@@ -28,7 +27,7 @@ class UserRepository(BaseRepository):
             raise ConvertRecordError(record=record, error_detail=f"{str(e)}")
 
     async def create(self, user: dict) -> GetUser:
-        user['password_hash'] = self.pwd_context.hash(user['password_hash'])
+        user['password_hash'] = hash_password(user['password_hash'])
         keys, values, indexes = self.data_from_dict(user)
         query = f"""
             INSERT INTO users ({', '.join(keys)})
@@ -74,8 +73,8 @@ class UserRepository(BaseRepository):
         return [GetUser(**record) for record in user_records]
 
     async def update(self, user_id: int, update_data: dict) -> GetUser:
-        if 'password_hash' in update_data and update_data['password_hash']:
-            update_data['password_hash'] = self.pwd_context.hash(update_data['password_hash'])
+        if update_data.get('password_hash'):
+            update_data['password_hash'] = hash_password(update_data['password_hash'])
         keys, values, indexes = self.data_from_dict(update_data)
         if not values:
             repo_logger.error(f"Invalid update data")

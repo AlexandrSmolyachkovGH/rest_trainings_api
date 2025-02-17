@@ -1,12 +1,17 @@
 from fastapi import APIRouter, Path, Depends, status
 from typing import Annotated
 
+from trainings_app.auth.utils.jwt_utils import get_current_token_payload
 from trainings_app.db.connection import get_repo
 from trainings_app.schemas.trainings import CreateTraining, GetTraining, FilterTraining, PutTraining, PatchTraining, \
     CreateTrainingWithExerciseIDs, GetTrainingWithExerciseIDs
 from trainings_app.repositories.trainings import TrainingRepository
 
-router = APIRouter(prefix='/trainings', tags=['trainings'])
+router = APIRouter(
+    prefix='/trainings',
+    tags=['trainings'],
+    dependencies=[Depends(get_current_token_payload)],
+)
 
 
 @router.get(
