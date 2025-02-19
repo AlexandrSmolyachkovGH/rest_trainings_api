@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from trainings_app.db.connection import get_repo
 from trainings_app.auth.repositories.jwt_auth import AuthJWTRepository
-from trainings_app.auth.schemas.jwt_auth import UserAuthScheme, TokenInfo
+from trainings_app.auth.schemas.jwt_auth import TokenInfo
 from trainings_app.auth.utils.jwt_utils import encode_jwt
 
 router = APIRouter(prefix='/jwt-auth', tags=['JWT-AUTH'])
@@ -17,13 +17,9 @@ router = APIRouter(prefix='/jwt-auth', tags=['JWT-AUTH'])
 )
 async def auth_user_issue_jwt(
         form_data: OAuth2PasswordRequestForm = Depends(),
-        # user: UserAuthScheme,
         auth_repo: AuthJWTRepository = Depends(get_repo(AuthJWTRepository)),
-):
-    # user_data = user.model_dump()
+) -> TokenInfo:
     user_record = await auth_repo.validate_auth_user(
-        # username=user_data.get('username'),
-        # password=user_data.get('password'),
         username=form_data.username,
         password=form_data.password,
     )
@@ -33,14 +29,15 @@ async def auth_user_issue_jwt(
             detail="The user was not authorized.",
         )
     jwt_payload = {
-        "sub": user_record["id"],
+        "sub": str(user_record["id"]),
         "username": user_record["username"],
         "email": user_record["email"],
         "role": user_record["role"],
         "exp": 30,
     }
     token = encode_jwt(payload=jwt_payload)
-    return TokenInfo(
+    token_info = TokenInfo(
         access_token=token,
         token_type='Bearer'
     )
+    return token_info

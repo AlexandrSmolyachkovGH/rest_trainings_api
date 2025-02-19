@@ -1,15 +1,22 @@
 from fastapi import APIRouter, Depends, Path, status, HTTPException
 from typing import Annotated
 
-from trainings_app.auth.utils.jwt_utils import get_current_token_payload, get_current_auth_user
+from trainings_app.auth.utils.jwt_utils import (
+    get_current_token_payload,
+    get_current_auth_user,
+    get_current_auth_user_with_role,
+)
 from trainings_app.db.connection import get_repo
-from trainings_app.schemas.clients import GetClient, CreateClient, PutClient, PatchClient, ClientFilters
+from trainings_app.schemas.clients import (
+    GetClient, CreateClient, PutClient, PatchClient, ClientFilters, CreateClientByUser
+)
 from trainings_app.repositories.clients import ClientRepository
+from trainings_app.schemas.users import stuffer_roles, client_roles, GetUser
 
 router = APIRouter(
     prefix='/clients',
     tags=['clients'],
-    dependencies=[Depends(get_current_token_payload),],
+    dependencies=[Depends(get_current_token_payload), ],
 )
 
 
@@ -22,14 +29,24 @@ router = APIRouter(
 async def create_client(
         client: CreateClient,
         client_repo: ClientRepository = Depends(get_repo(ClientRepository)),
-        payload: dict = Depends(get_current_token_payload),
 ):
-    if client.user_id != payload.get('sub') and payload.get('role') == 'USER':
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Invalid ID of the user: {payload.get('sub')}.",
-        )
     return await client_repo.create(client.model_dump(exclude_unset=True, exclude_defaults=True))
+
+
+@router.post(
+    path='/by_user',
+    response_model=GetClient,
+    description='Create the client',
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_client_by_user(
+        client: CreateClientByUser,
+        client_repo: ClientRepository = Depends(get_repo(ClientRepository)),
+        user: GetUser = Depends(get_current_auth_user_with_role(allowed_roles=client_roles)),
+):
+    client_dct = client.model_dump(exclude_unset=True, exclude_defaults=True)
+    client_dct['user_id'] = user.id
+    return await client_repo.create(client_dct)
 
 
 @router.get(
@@ -54,8 +71,15 @@ async def get_client(
 async def get_clients(
         filter_model: ClientFilters = Depends(),
         client_repo: ClientRepository = Depends(get_repo(ClientRepository)),
+        user: GetUser = Depends(get_current_auth_user_with_role(allowed_roles=stuffer_roles)),
 ):
-    filter_dict = filter_model.model_dump(exclude_defaults=True, exclude_unset=True) if filter_model else None
+    try:
+        filter_dict = filter_model.model_dump(exclude_defaults=True, exclude_unset=True) if filter_model else None
+    except HTTPException as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Exception: {e}"
+        )
     return await client_repo.get_clients(filter_dict)
 
 
