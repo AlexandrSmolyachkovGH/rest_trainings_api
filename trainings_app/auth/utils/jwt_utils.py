@@ -45,12 +45,6 @@ def decode_jwt(
         algorithm: str = settings.auth_jwt.algorithm,
 ) -> dict:
     """Custom function for the JWT decoding."""
-    # decoded = jwt.decode(
-    #     token,
-    #     public_key,
-    #     algorithms=[algorithm],
-    # )
-    # return decoded
     try:
         decoded = jwt.decode(
             token,
