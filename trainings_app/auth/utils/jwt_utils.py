@@ -3,7 +3,8 @@ from typing import Callable, Awaitable, Optional
 
 import jwt
 
-from fastapi.security import OAuth2PasswordBearer
+
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi import Depends, HTTPException, status
 
 from trainings_app.auth import settings
@@ -62,15 +63,15 @@ def decode_jwt(
         """)
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/jwt-auth/login/")
+oauth2_scheme = HTTPBearer()
 
 
 async def get_current_token_payload(
-        token: str = Depends(oauth2_scheme)
+        token: HTTPAuthorizationCredentials = Depends(oauth2_scheme)
 ) -> dict:
-    """Receives new token for the User entity."""
+    """Receives and decodes the access token for user authentication."""
     try:
-        payload = decode_jwt(token=token)
+        payload = decode_jwt(token=token.credentials)
     except TokenError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

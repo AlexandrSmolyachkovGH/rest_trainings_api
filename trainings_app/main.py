@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import FastAPI
 import uvicorn
 
@@ -6,6 +8,7 @@ from trainings_app.routers import users, clients, memberships, trainings, exerci
 from trainings_app.auth.routers import jwt_auth
 from trainings_app.exceptions.exception_handlers import record_not_found_handler, convert_record_handler
 from trainings_app.exceptions.exceptions import RecordNotFoundError, ConvertRecordError
+from trainings_app.tg_bot.bot import start_bot
 
 app = FastAPI()
 
@@ -15,6 +18,7 @@ async def startup():
     """Initialize the application server."""
 
     await AsyncpgPool.setup()
+    asyncio.create_task(start_bot())
 
 
 @app.on_event("shutdown")
