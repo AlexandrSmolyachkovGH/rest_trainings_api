@@ -6,7 +6,11 @@ import uvicorn
 from trainings_app.db.connection import AsyncpgPool
 from trainings_app.routers import users, clients, memberships, trainings, exercises, trainings_exercises, root
 from trainings_app.auth.routers import jwt_auth
-from trainings_app.exceptions.exception_handlers import record_not_found_handler, convert_record_handler
+from trainings_app.exceptions.exception_handlers import (
+    record_not_found_handler,
+    convert_record_handler,
+    access_denied_handler,
+)
 from trainings_app.exceptions.exceptions import RecordNotFoundError, ConvertRecordError
 from trainings_app.tg_bot.bot import start_bot
 
@@ -40,6 +44,7 @@ app.include_router(router=jwt_auth.router)
 
 app.add_exception_handler(RecordNotFoundError, record_not_found_handler)
 app.add_exception_handler(ConvertRecordError, convert_record_handler)
+app.add_exception_handler(ConvertRecordError, access_denied_handler)
 
 if __name__ == "__main__":
     uvicorn.run("trainings_app.main:app")

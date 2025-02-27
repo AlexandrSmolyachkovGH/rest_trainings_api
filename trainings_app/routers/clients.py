@@ -34,22 +34,6 @@ async def create_client(
     return await client_repo.create(client.model_dump(exclude_unset=True, exclude_defaults=True))
 
 
-# @router.post(
-#     path='/by_user',
-#     response_model=GetClient,
-#     description='Create the client',
-#     status_code=status.HTTP_201_CREATED,
-# )
-# async def create_client_by_user(
-#         client: CreateClientByUser,
-#         client_repo: ClientRepository = Depends(get_repo(ClientRepository)),
-#         user: GetUser = Depends(get_current_auth_user_with_role(allowed_roles=client_roles)),
-# ):
-#     client_dct = client.model_dump(exclude_unset=True, exclude_defaults=True)
-#     client_dct['user_id'] = user.id
-#     return await client_repo.create(client_dct)
-
-
 @router.get(
     path='/{client_id}',
     response_model=GetClient,
@@ -81,13 +65,7 @@ async def get_clients(
         client_repo: ClientRepository = Depends(get_repo(ClientRepository)),
         user: GetUser = Depends(get_current_auth_user_with_role(allowed_roles=stuffer_roles)),
 ):
-    try:
-        filter_dict = filter_model.model_dump(exclude_defaults=True, exclude_unset=True) if filter_model else None
-    except HTTPException as e:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"Exception: {e}"
-        )
+    filter_dict = filter_model.model_dump(exclude_defaults=True, exclude_unset=True) if filter_model else None
     return await client_repo.get_clients(filter_dict)
 
 

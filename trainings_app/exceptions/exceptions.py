@@ -33,6 +33,14 @@ class TokenError(ValueError):
     pass
 
 
+class AccessError(Exception):
+    """Error with access to the source."""
+
+    def __init__(self, message="Access Denied"):
+        self.message = message
+        super().__init__(self.message)
+
+
 class UninitializedDatabasePoolError(Exception):
     def __init__(self, message="The database connection pool has not been properly initialized."):
         self.message = message

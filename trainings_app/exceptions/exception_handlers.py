@@ -3,7 +3,7 @@ import json
 from fastapi import Request, status, Response
 from fastapi.responses import JSONResponse
 
-from trainings_app.exceptions.exceptions import RecordNotFoundError, ConvertRecordError
+from trainings_app.exceptions.exceptions import RecordNotFoundError, ConvertRecordError, AccessError
 from trainings_app.custom_loggers.main import main_logger
 
 
@@ -41,5 +41,17 @@ def convert_record_handler(request: Request, exc: ConvertRecordError) -> Respons
             "message": str(exc),
             "record": exc.record,
             "error_detail": exc.error_detail,
+        }
+    )
+
+
+def access_denied_handler(request: Request, exc: AccessError) -> Response:
+    """Handler for the AccessError"""
+    main_logger.error(f"{str(exc)}")
+    return JSONResponse(
+        status_code=status.HTTP_403_FORBIDDEN,
+        content={
+            'error': 'AccessError',
+            'message': str(exc.message) + ': No access to the specified user',
         }
     )

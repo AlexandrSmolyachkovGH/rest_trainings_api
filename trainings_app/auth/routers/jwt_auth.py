@@ -13,39 +13,6 @@ from trainings_app.db_redis.settings import redis_client
 router = APIRouter(prefix='/jwt-auth', tags=['JWT-AUTH'])
 
 
-# @router.post(
-#     path='/login/',
-#     response_model=TokenInfo,
-#     description="Get JWT token for authentication",
-#     status_code=status.HTTP_200_OK,
-# )
-# async def auth_user_issue_jwt(
-#         form_data: OAuth2PasswordRequestForm = Depends(),
-#         auth_repo: AuthJWTRepository = Depends(get_repo(AuthJWTRepository)),
-# ) -> TokenInfo:
-#     user_record = await auth_repo.validate_auth_user(
-#         username=form_data.username,
-#         password=form_data.password,
-#     )
-#     if not user_record:
-#         raise HTTPException(
-#             status_code=status.HTTP_401_UNAUTHORIZED,
-#             detail="The user was not authorized.",
-#         )
-#     jwt_payload = {
-#         "sub": str(user_record["id"]),
-#         "username": user_record["username"],
-#         "email": user_record["email"],
-#         "role": user_record["role"],
-#         "exp": 30,
-#     }
-#     token = encode_jwt(payload=jwt_payload)
-#     token_info = TokenInfo(
-#         access_token=token,
-#         token_type='Bearer'
-#     )
-#     return token_info
-
 @router.post(
     path='/login/',
     response_model=AuthToken,
@@ -105,7 +72,7 @@ async def auth_verification(code: str):
     refresh_token = encode_jwt(redis_token, expire_timedelta=timedelta(days=365))
     refresh_info = RefreshToken(
         message=f"Successful verification. You have received a refresh token."
-        f" Use it to get an access token. You should also save it to refresh the access token in the future.",
+                f" Use it to get an access token. You should also save it to refresh the access token in the future.",
         refresh_token=refresh_token,
         token_type="Bearer",
     )

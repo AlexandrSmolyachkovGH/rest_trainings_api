@@ -1,11 +1,10 @@
 from typing import Optional
 
-from fastapi import HTTPException, status
 from pydantic import ValidationError
 
 from trainings_app.repositories.base import BaseRepository
 from trainings_app.schemas.clients import GetClient
-from trainings_app.exceptions.exceptions import ConvertRecordError
+from trainings_app.exceptions.exceptions import ConvertRecordError, AccessError
 from trainings_app.custom_loggers.repositories import repo_logger
 from trainings_app.db.fields.clients import ClientFields
 from trainings_app.schemas.users import GetUser, RoleEnum
@@ -30,10 +29,7 @@ class ClientRepository(BaseRepository):
     async def __check_client_access(self, client_id: int, user: GetUser) -> None:
         client = await self.get(client_id)
         if client.user_id != user.id and user.role == RoleEnum.USER:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail='No access to the specified user',
-            )
+            raise AccessError
 
     async def create(self, client: dict) -> GetClient:
         keys, values, indexes = self.data_from_dict(client)
