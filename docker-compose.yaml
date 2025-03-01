@@ -19,6 +19,20 @@ services:
       timeout: 5s
       retries: 5
 
+  db_redis:
+    image: "redis:7.4"
+    container_name: db_redis
+    environment:
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    restart: always
+    volumes:
+      - redis_data:/data
+
   migrations:
     build:
       dockerfile: docker/migrations/Dockerfile
@@ -58,6 +72,7 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:
 
 networks:
   app_network:

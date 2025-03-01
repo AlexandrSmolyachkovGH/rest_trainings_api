@@ -2,10 +2,16 @@ from typing import Annotated, Optional
 from fastapi import APIRouter, Depends, Path, Query, status
 
 from trainings_app.schemas.memberships import GetMembership, CreateMembership, PutMembership, PatchMembership
+from trainings_app.schemas.users import stuffer_roles
 from trainings_app.repositories.memberships import MembershipRepository
 from trainings_app.db.connection import get_repo
+from trainings_app.auth.utils.jwt_utils import get_current_auth_user_with_role
 
-router = APIRouter(prefix='/memberships', tags=['memberships'])
+router = APIRouter(
+    prefix='/memberships',
+    tags=['memberships'],
+    dependencies=[Depends(get_current_auth_user_with_role(stuffer_roles))]
+)
 
 
 @router.get(
@@ -44,8 +50,7 @@ async def create_membership(
         membership_obj: CreateMembership,
         repo: MembershipRepository = Depends(get_repo(MembershipRepository)),
 ):
-    membership_dict = membership_obj.dict()
-    return await repo.create(membership_dict)
+    return await repo.create(membership_obj.dict())
 
 
 @router.delete(

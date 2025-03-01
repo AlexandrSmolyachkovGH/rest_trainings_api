@@ -1,9 +1,8 @@
 import abc
 from asyncpg import Connection
 
-from trainings_app.logging.repositories import repo_logger
+from trainings_app.custom_loggers.repositories import repo_logger
 from trainings_app.exceptions.exceptions import AttrError, RecordNotFoundError
-
 
 
 class BaseRepository(abc.ABC):

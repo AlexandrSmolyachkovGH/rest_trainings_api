@@ -7,3 +7,6 @@ venv
 __pycache__/
 *.db
 logs/
+certs/
+trainings_app/auth/utils/test.py
+

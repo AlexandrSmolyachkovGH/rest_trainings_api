@@ -27,6 +27,14 @@ class MuscleGroupEnum(str, Enum):
     OTHER = 'OTHER'
 
 
+class ExerciseIDs(BaseModel):
+    exercises: Optional[list] = Field(
+        default=None,
+        description='Unique exercise IDs',
+        example='[1, 12, 5, 81]',
+    )
+
+
 class CreateExercise(BaseModel):
     title: str = Field(
         max_length=50,
@@ -162,12 +170,12 @@ class FilterExercise(BaseModel):
         example='ARMS',
     )
     equipment_required: Optional[bool] = Field(
-        default=False,
+        default=None,
         description='Indicates if the exercise requires equipment',
         example=False,
     )
     complexity_lvl: Optional[ComplexityEnum] = Field(
-        default=ComplexityEnum.BEGINNER,
+        default=None,
         description='Complexity level of the exercise',
         example='BEGINNER',
     )

@@ -13,20 +13,32 @@ class ConvertRecordError(RepositoryError):
         self.record = record
         self.error_detail = error_detail
         message = f"Failed to convert record: {error_detail}"
-        super().__init__(message)
+        super().__init__(self.record, self.error_detail, message)
 
 
 class RecordNotFoundError(RepositoryError):
     def __init__(self):
-        detail = {
+        self.detail = {
             "error": "RecordNotFoundError",
             "message": f"Record not found Error."
         }
-        super().__init__(detail)
+        super().__init__(self.detail)
 
 
 class AttrError(ValueError):
     pass
+
+
+class TokenError(ValueError):
+    pass
+
+
+class AccessError(Exception):
+    """Error with access to the source."""
+
+    def __init__(self, message="Access Denied"):
+        self.message = message
+        super().__init__(self.message)
 
 
 class UninitializedDatabasePoolError(Exception):

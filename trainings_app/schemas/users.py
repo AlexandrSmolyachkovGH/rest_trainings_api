@@ -14,6 +14,10 @@ class RoleEnum(str, Enum):
     OTHER = 'OTHER'
 
 
+stuffer_roles = [RoleEnum.ADMIN, RoleEnum.SYSTEM, RoleEnum.ANALYST, RoleEnum.STAFFER, RoleEnum.TRAINER, RoleEnum.OTHER]
+client_roles = [RoleEnum.USER]
+
+
 class CreateUser(BaseModel):
     username: str = Field(
         min_length=2,

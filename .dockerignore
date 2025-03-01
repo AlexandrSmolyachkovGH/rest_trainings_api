@@ -13,3 +13,5 @@ Thumbs.db
 *.sqlite3
 logs
 logs/
+certs/
+trainings_app/auth/utils/test.py

@@ -1,7 +1,9 @@
 from typing import Annotated, Optional
-from fastapi import APIRouter, Depends, Path, status
+from fastapi import APIRouter, Depends, Path, status, HTTPException
 
-from trainings_app.schemas.users import GetUser, CreateUser, PutUser, PatchUser, FilterUser
+from trainings_app.auth.utils.jwt_utils import get_current_auth_user_with_role
+from trainings_app.schemas.users import GetUser, CreateUser, PutUser, PatchUser, FilterUser, stuffer_roles, \
+    client_roles, RoleEnum
 from trainings_app.db.connection import get_repo
 from trainings_app.repositories.users import UserRepository
 
@@ -17,6 +19,7 @@ router = APIRouter(prefix='/users', tags=['user'])
 async def get_users(
         filter_model: FilterUser = Depends(),
         user_repo: UserRepository = Depends(get_repo(UserRepository)),
+        user: GetUser = Depends(get_current_auth_user_with_role(allowed_roles=stuffer_roles)),
 ):
     filter_dict = filter_model.model_dump(exclude_defaults=True, exclude_unset=True) if filter_model else None
     return await user_repo.get_users(filter_dict)
@@ -31,7 +34,13 @@ async def get_users(
 async def get_user(
         user_id: Optional[int] = Path(gt=0, description="Filter by user ID"),
         user_repo: UserRepository = Depends(get_repo(UserRepository)),
+        user: GetUser = Depends(get_current_auth_user_with_role(allowed_roles=stuffer_roles + client_roles)),
 ):
+    if user_id != user.id and user.role == RoleEnum.USER:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='No access to the specified user',
+        )
     return await user_repo.get(user_id)
 
 
@@ -45,8 +54,7 @@ async def create_user(
         user: CreateUser,
         user_repo: UserRepository = Depends(get_repo(UserRepository)),
 ):
-    user_dict = user.dict()
-    return await user_repo.create(user_dict)
+    return await user_repo.create(user.dict())
 
 
 @router.delete(
@@ -58,7 +66,13 @@ async def create_user(
 async def delete_user(
         user_id: Annotated[int, Path(title='The ID of the user to delete', gt=0)],
         user_repo: UserRepository = Depends(get_repo(UserRepository)),
+        user: GetUser = Depends(get_current_auth_user_with_role(allowed_roles=stuffer_roles + client_roles)),
 ):
+    if user_id != user.id and user.role == RoleEnum.USER:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='No access to the specified user',
+        )
     return await user_repo.delete(user_id)
 
 
@@ -72,7 +86,13 @@ async def put_user(
         user_id: Annotated[int, Path(gt=0)],
         user: PutUser,
         user_repo: UserRepository = Depends(get_repo(UserRepository)),
+        auth_user: GetUser = Depends(get_current_auth_user_with_role(allowed_roles=stuffer_roles + client_roles)),
 ):
+    if user_id != auth_user.id and auth_user.role == RoleEnum.USER:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='No access to the specified user',
+        )
     return await user_repo.update(user_id, user.dict())
 
 
@@ -86,5 +106,11 @@ async def patch_user(
         user_id: Annotated[int, Path(gt=0)],
         user: PatchUser,
         user_repo: UserRepository = Depends(get_repo(UserRepository)),
+        auth_user: GetUser = Depends(get_current_auth_user_with_role(allowed_roles=stuffer_roles + client_roles)),
 ):
+    if user_id != auth_user.id and auth_user.role == RoleEnum.USER:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='No access to the specified user',
+        )
     return await user_repo.update(user_id, user.dict(exclude_defaults=True, exclude_unset=True))

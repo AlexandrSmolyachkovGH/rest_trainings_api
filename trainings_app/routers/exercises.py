@@ -1,11 +1,17 @@
 from fastapi import APIRouter, Path, Depends, status
 from typing import Annotated
 
+from trainings_app.auth.utils.jwt_utils import get_current_auth_user_with_role
 from trainings_app.db.connection import get_repo
 from trainings_app.schemas.exercises import GetExercise, CreateExercise, PutExercise, PatchExercise, FilterExercise
 from trainings_app.repositories.exercises import ExerciseRepository
+from trainings_app.schemas.users import stuffer_roles, client_roles
 
-router = APIRouter(prefix='/exercises', tags=['exercises'])
+router = APIRouter(
+    prefix='/exercises',
+    tags=['exercises'],
+    dependencies=[Depends(get_current_auth_user_with_role(stuffer_roles + client_roles))]
+)
 
 
 @router.get(
@@ -18,7 +24,7 @@ async def get_exercises_list(
         filter_model: FilterExercise = Depends(),
         exercise_repo: ExerciseRepository = Depends(get_repo(ExerciseRepository)),
 ):
-    filter_dict = filter_model.model_dump(exclude_defaults=True) if filter_model else None
+    filter_dict = filter_model.model_dump(exclude_defaults=True, exclude_unset=True) if filter_model else None
     return await exercise_repo.get_exercises(filter_dict)
 
 
