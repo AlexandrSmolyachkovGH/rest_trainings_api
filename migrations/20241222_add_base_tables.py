@@ -37,7 +37,7 @@ steps = [
                     'VERY_LOW', 'LOW', 'MEDIUM', 'HIGH', 'VERY_HIGH', 'EXTREME');
             END IF;
         END $$;
-        """
+        """,
          "DROP TYPE IF EXISTS intensity_enum;"
          ),
 

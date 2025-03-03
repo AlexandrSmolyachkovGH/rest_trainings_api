@@ -19,7 +19,7 @@ steps = [
             description TEXT DEFAULT NULL
             
         );
-        """
+        """,
          "DROP TABLE IF EXISTS Trainings;"
          ),
 
@@ -32,7 +32,7 @@ steps = [
             equipment_required BOOLEAN DEFAULT FALSE,
             complexity_lvl complexity_enum DEFAULT 'BEGINNER'
         );
-        """
+        """,
          "DROP TABLE IF EXISTS Exercises;"
          ),
 
@@ -47,7 +47,7 @@ steps = [
             extra_weight NUMERIC(5, 2) DEFAULT NULL,
             PRIMARY KEY (training_id, exercise_id)
         );
-        """
+        """,
          "DROP TABLE IF EXISTS Trainings_exercises;"
          ),
 
@@ -60,7 +60,7 @@ steps = [
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             status training_plan_status_enum DEFAULT 'ACTIVE'
         );
-        """
+        """,
          "DROP TABLE IF EXISTS Training_plans;"
          ),
 
@@ -70,7 +70,7 @@ steps = [
             training_plan_id INTEGER NOT NULL REFERENCES Training_plans(id) ON DELETE CASCADE,
             PRIMARY KEY (training_id, training_plan_id)
         );
-        """
+        """,
          "DROP TABLE IF EXISTS Training_plan_trainings;"
          ),
 
@@ -81,7 +81,7 @@ steps = [
             pinned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (client_id, training_plan_id)
         );
-        """
+        """,
          "DROP TABLE IF EXISTS Clients_training_plan;"
          ),
 
