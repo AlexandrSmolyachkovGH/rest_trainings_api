@@ -13,6 +13,7 @@ from trainings_app.exceptions.exception_handlers import (
 )
 from trainings_app.exceptions.exceptions import RecordNotFoundError, ConvertRecordError
 from trainings_app.tg_bot.bot import start_bot
+from trainings_app.reports import routers
 
 app = FastAPI()
 
@@ -39,6 +40,8 @@ app.include_router(router=memberships.router)
 app.include_router(router=trainings.router)
 app.include_router(router=exercises.router)
 app.include_router(router=trainings_exercises.router)
+
+app.include_router(router=routers.router)
 
 app.include_router(router=jwt_auth.router)
 

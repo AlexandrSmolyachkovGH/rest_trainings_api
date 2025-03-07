@@ -1,35 +1,42 @@
-[tool.poetry]
+[project]
 name = "rest_trainings_api"
 version = "0.1.0"
 description = ""
-authors = ["AlexandrSmolyachkovGH <alexandr.smolyachkov@gmail.com>"]
-readme = "README.md"
+authors = [
+    { name = "AlexandrSmolyachkovGH", email = "alexandr.smolyachkov@gmail.com" }
+]
+requires-python = ">=3.10,<4.0"
+
+dependencies = [
+    "fastapi>=0.115.6,<0.116.0",
+    "asyncpg>=0.30.0,<0.31.0",
+    "uvicorn>=0.34.0,<0.35.0",
+    "psycopg2>=2.9.10,<2.10.0",
+    "python-dotenv>=1.0.1,<1.1.0",
+    "yoyo-migrations>=9.0.0,<10.0.0",
+    "pydantic[email]>=2.10.4,<2.11.0",
+    "passlib>=1.7.4,<1.8.0",
+    "bcrypt>=3.2.0,<3.3.0",
+    "pyjwt[crypto]>=2.10.1,<2.11.0",
+    "python-multipart>=0.0.20,<0.1.0",
+    "aiogram>=3.18.0,<4.0.0",
+    "redis>=5.2.1,<5.3.0",
+    "celery[redis]>=5.4.0,<5.5.0",
+    "aio-pika>=9.5.5,<9.6.0",
+    "asgiref (>=3.8.1,<4.0.0)"
+]
+
+[tool.poetry]
 package-mode = false
 
-[tool.poetry.dependencies]
-python = "^3.10"
-fastapi = "^0.115.6"
-asyncpg = "^0.30.0"
-uvicorn = "^0.34.0"
-psycopg2-binary = "^2.9.10"
-psycopg2 = "^2.9.10"
-python-dotenv = "^1.0.1"
-yoyo-migrations = "^9.0.0"
-pydantic = {extras = ["email"], version = "^2.10.4"}
-passlib = "^1.7.4"
-bcrypt = "3.2.0"
-pytest = "^8.3.4"
-httpx = "^0.28.1"
-pytest-order = "^1.3.0"
-pytest-ordering = "^0.6"
-pytest-asyncio = "^0.25.3"
-pyjwt = {extras = ["crypto"], version = "^2.10.1"}
-python-multipart = "^0.0.20"
-aiogram = "^3.18.0"
-redis = "^5.2.1"
-
-
+[tool.poetry.group.dev.dependencies]
+pytest = ">=8.3.4,<8.4.0"
+pytest-order = ">=1.3.0,<1.4.0"
+pytest-ordering = ">=0.6,<0.7"
+pytest-asyncio = ">=0.25.3,<0.26.0"
+httpx = ">=0.28.1,<0.29.0"
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+

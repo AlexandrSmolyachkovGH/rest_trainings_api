@@ -1,3 +1,4 @@
+import json
 from typing import Optional
 from datetime import datetime
 from pydantic import ValidationError
@@ -71,6 +72,19 @@ class UserRepository(BaseRepository):
         query += ";"
         user_records = await self.conn.fetch(query, *values)
         return [GetUser(**record) for record in user_records]
+
+    async def get_new_users_for_report(self, filters: dict) -> str:
+        query = f"""
+            SELECT {self.fields.get_fields_str()}
+            FROM users
+            WHERE created_at BETWEEN $1 AND $2;
+        """
+        try:
+            user_records = await self.conn.fetch(query, *filters.values())
+        except Exception as e:
+            raise f"{e}"
+        user_records_list = [GetUser(**record) for record in user_records]
+        return user_records_list
 
     async def update(self, user_id: int, update_data: dict) -> GetUser:
         if update_data.get('password_hash'):

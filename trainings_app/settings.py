@@ -20,6 +20,13 @@ class Settings(BaseModel):
                f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}" \
                f"/{self.POSTGRES_DB}"
 
+    @property
+    def postgres_dsn_celery(self):
+        return f"db+postgresql://" \
+               f"{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD.get_secret_value()}" \
+               f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/" \
+               f"{self.POSTGRES_DB}"
+
 
 DB_CONFIG = {
     "POSTGRES_USER": os.getenv("POSTGRES_USER"),

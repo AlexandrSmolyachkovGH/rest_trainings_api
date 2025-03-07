@@ -1,6 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel, Field, EmailStr
-from datetime import datetime
+from datetime import datetime, date
 from enum import Enum
 
 
@@ -228,3 +228,8 @@ class FilterUser(BaseModel):
         description="Date of deletion of the user account.",
         example='2024-12-25 00:00:00',
     )
+
+
+class DateFilterUser(BaseModel):
+    from_date: date
+    to_date: date
