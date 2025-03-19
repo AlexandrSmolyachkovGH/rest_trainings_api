@@ -49,15 +49,17 @@ class PaymentRepository(BaseRepository):
                 RETURNING {self.fields.get_fields_str()};
         """
         async with self.conn.transaction():
-            payment_record = dict(await self.fetchrow_or_404(main_query, *values))
+            payment_record = await self.fetchrow_or_404(main_query, *values)
+            payment_data = dict(payment_record)
             membership_data = dict(await self.conn.fetchrow(select_membership, payment_data['membership_id']))
 
             # Send the data to payment service
             async with httpx.AsyncClient() as client:
                 payload = {
+                    "payment_id": payment_data['id'],
                     "client_id": payment_data['client_id'],
                     "amount": float(membership_data['price']),
-                    "subscribe_type": membership_data['access_level']
+                    "subscribe_type": membership_data['access_level'],
                 }
                 response = await client.post(os.getenv('PAYMENT_SERVICE_URL'), json=payload)
                 payment_link = (

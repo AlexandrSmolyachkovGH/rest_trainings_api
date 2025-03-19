@@ -1,4 +1,5 @@
 import asyncio
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 import uvicorn
@@ -23,24 +24,21 @@ from trainings_app.exceptions.exception_handlers import (
 from trainings_app.exceptions.exceptions import RecordNotFoundError, ConvertRecordError
 from trainings_app.tg_bot.bot import start_bot
 from trainings_app.reports import routers
+from trainings_app.brokers.consumer import payment_consume
 
-app = FastAPI()
 
-
-@app.on_event("startup")
-async def startup():
-    """Initialize the application server."""
-
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     await AsyncpgPool.setup()
-    asyncio.create_task(start_bot())
-
-
-@app.on_event("shutdown")
-async def shutdown():
-    """Close connection pool in case of application shutdown."""
-
+    bot_task = asyncio.create_task(start_bot())
+    rabbit_task = asyncio.create_task(payment_consume())
+    yield
+    bot_task.cancel()
+    rabbit_task.cancel()
     await AsyncpgPool.close_pool()
 
+
+app = FastAPI(lifespan=lifespan)
 
 app.include_router(router=root.router)
 app.include_router(router=users.router)

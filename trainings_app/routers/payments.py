@@ -9,11 +9,19 @@ from trainings_app.schemas.payments import (
     GetExtendedPaymentModel,
 )
 from trainings_app.repositories.payments import PaymentRepository
-from trainings_app.db.connection import get_repo
+from trainings_app.db.connection import get_repo, AsyncpgPool
 from trainings_app.auth.utils.jwt_utils import get_current_auth_user_with_role
 from trainings_app.schemas.users import GetUser, stuffer_roles, client_roles
 
 router = APIRouter(prefix='/payments', tags=['payments'])
+
+
+async def resolve_dependencies():
+    pool = await AsyncpgPool.get_pool()
+    conn = await pool.acquire()
+    repo = PaymentRepository(conn)
+    user = get_current_auth_user_with_role(allowed_roles=stuffer_roles + client_roles)
+    return repo, user, conn
 
 
 @router.get(
