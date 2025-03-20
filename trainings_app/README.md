@@ -8,9 +8,19 @@ club. It includes:
 - Client and Training Management;
 - Exercise Catalog;
 - Membership Handling;
-- Reports Generation;
-- Asynchronous Task Processing (Celery & RabbitMQ);
+- Automatic Reports Generation based on Celery;
+- Implementation of payment processes by using RabbitMQ;
 - And etc.
+
+## Tech Stack
+
+- `FastAPI` - Backend framework.
+- `PostgreSQL` - Primary relational database.
+- `Redis` - Caching & temporary data storage.
+- `JWT (RSA)` - Authentication & token-based security.
+- `Celery + RabbitMQ` - Background task processing & distributed task queue.
+- `RabbitMQ (AMQP)` - Message broker for asynchronous communication.
+- `Docker` - Containerization & service orchestration.
 
 ## Installation & Setup
 
@@ -128,10 +138,130 @@ The table **links tables Trainings and Training_plans**.
 
 - `training_id` - `INTEGER` - **required** - REFERENCES `Trainings(id)` - The training ID included in a specific plan.
   Foreign key with `ON DELETE CASCADE`.
-- `training_plan_id` - `INTEGER` - **required** - REFERENCES `Training_plans(id)` - The plan ID references specific
+- `training_plan_id` - `INTEGER` - **required** - REFERENCES `Training_plans(id)` - The plan ID refers to specific
   trainings. Foreign key with `ON DELETE CASCADE`.
 
+### Table Clients_training_plan
 
-### 
+The table **links tables Clients and Training_plans**.
+
+- `client_id` - `INTEGER` - **required** - REFERENCES `Clients(id)` - The client ID included in a specific plan.
+  Foreign key with `ON DELETE CASCADE`.
+- `training_plan_id` - `INTEGER` - **required** - REFERENCES `Training_plans(id)` - The plan ID refers to a specific
+  client. Foreign key with `ON DELETE CASCADE`.
+- `pinned_at` - `TIMESTAMP` - **optional** - Specifies the time of addition. Default value is `CURRENT_TIMESTAMP`.
+
+### Table Simple_Report
+
+The table stores **report content** and additional information.
+
+- `id` - `SERIAL PRIMARY KEY` - **required** - Unique identifier of the report.
+- `report_date_start` - `DATE` - **required** - Start date of report.
+- `report_date_end` - `DATE` - **required** - End date of report.
+- `new_users` - `JSONB` - **required** - Report payload.
+
+### Table Payments
+
+The table contains detailed **payment information** included payment statuses and etc.
+
+- `id` - `SERIAL PRIMARY KEY` - **required** - Unique identifier of the payment.
+- `client_id` - `INTEGER` - **required** - Client ID referring to the payment.
+- `membership_id` - `INTEGER` - **required** - Membership ID referring to the payment.
+- `payment_status` - `ENUM` - **optional** - Indicates the status of the payment (for
+  example, `PENDING`, `PAID`, `EXPIRED`). Default value is `NULL`.
+- `timestamp` - `TIMESTAMP` - **optional** - Timestamp of the specified payment status.
+
+## API Endpoints
+
+### API Access Levels
+
+Description of the possible **access types** for routes:
+
+- `Unauthenticated` – Routes that do not require authentication and are accessible to all users.
+- `Authenticated` - Routes that require basic user authentication and are accessible to authorized users.
+- `Restricted` - Routes that require elevated access permissions and are accessible only to users with administrator
+  roles.
+
+### Index
+
+- `GET` - `/` - **Unauthenticated** - Returns base information of the service.
+
+### Health
+
+- `GET` - `/health/` - **Unauthenticated** - Returns the running status of the service.
+
+### Authentication
+
+`POST` - `/jwt-auth/login/` - **Unauthenticated** - Login & get Telegram verification link.
+`POST` - `/jwt-auth/verification/` - **Unauthenticated** - Verify Telegram code & get refresh token.
+`POST` - `/jwt-auth/get-access-token/` - **Unauthenticated** - Exchange refresh token for access token.
+
+### Users
+
+- `GET` - `/users/` - **Restricted** - Retrieve list of users.
+- `GET` - `/users/{user_id}/` - **Authenticated** - Retrieve the user by ID.
+- `GET` - `/users/for-report/` - **Authenticated** - Retrieve list of users for a report.
+- `POST` - `/users/` - **Unauthenticated** - Create the user.
+- `DELETE` - `/users/{user_id}/` - **Authenticated** - Delete the user.
+- `PUT` - `/users/{user_id}/` - **Authenticated** - Complete update of the user record.
+- `PATCH` - `/users/{user_id}/` - **Authenticated** - Partial update of the user record.
+
+### Memberships
+
+- `GET` - `/memberships/` - **Restricted** - Retrieve list of memberships
+- `GET` - `/memberships/{membership_id}/` - **Restricted** - Retrieve the membership by ID.
+- `POST` - `/memberships/` - **Restricted** - Create the membership.
+- `DELETE` - `/memberships/{membership_id}/` - **Restricted** - Delete the membership.
+- `PUT` - `/memberships/{membership_id}/` - **Restricted** - Complete update of the membership record.
+- `PATCH` - `/memberships/{membership_id}/` - **Restricted** - Partial update of the membership record.
+
+### Clients
+
+- `GET` - `/clients/` - **Restricted** - Retrieve list of clients.
+- `GET` - `/clients/{client_id}/` - **Authenticated** - Retrieve the client by ID.
+- `POST` - `/clients/` - **Authenticated** - Create the client.
+- `DELETE` - `/clients/{client_id}/` - **Authenticated** - Delete the client.
+- `PUT` - `/clients/{client_id}/` - **Authenticated** - Complete update of the client record.
+- `PATCH` - `/clients/{client_id}/` - **Authenticated** - Partial update of the client record.
+
+### Trainings
+
+- `GET` - `/trainings/` - **Restricted** - Retrieve list of trainings.
+- `GET` - `/trainings/{train_id}/` - **Authenticated** - Retrieve the training by ID.
+- `GET` - `/trainings/exercice-ids/{train_id}/` - **Authenticated** - Retrieve the training with exercise IDs.
+- `POST` - `/trainings/` - **Authenticated** - Create the training.
+- `POST` - `/trainings/exercice-ids/` - **Authenticated** - Create the training with indicated exercises.
+- `DELETE` - `/trainings/{train_id}/` - **Authenticated** - Delete the training.
+- `PUT` - `/trainings/{train_id}/` - **Authenticated** - Complete update of the training record.
+- `PATCH` - `/trainings/{train_id}/` - **Authenticated** - Partial update of the training record.
+
+### Trainings-exercises
+
+- `GET` - `/trainings-exercises/` - **Restricted** - Retrieve training-exercise records.
+- `GET` - `/trainings-exercises/{training_id}/{exercise_id}/` - **Authenticated** - Retrieve the training-exercise
+  record.
+- `POST` - `/trainings-exercises/` - **Authenticated** - Create the training-exercise record.
+- `DELETE` - `/trainings-exercises/{exercise_id}/` - **Authenticated** - Delete the training-exercise record.
+- `PUT` - `/trainings-exercises/{exercise_id}/` - **Authenticated** - Complete update of the training-exercise record.
+- `PATCH` - `/trainings-exercises/{exercise_id}/` - **Authenticated** - Partial update of the training-exercise record.
+
+### Payments
+
+- `GET` - `/payments/` - **Restricted** - Retrieve list of payments.
+- `GET` - `/payments/{payment_id}/` - **Authenticated** - Retrieve the payment by ID.
+- `POST` - `/payments/` - **Authenticated** - Create the payment record.
+- `DELETE` - `/payments/{payment_id}/` - **Authenticated** - Delete the payment record.
+- `PUT` - `/payments/{payment_id}/` - **Authenticated** - Complete update of the payment record.
+
+### Reports
+
+- `POST` - `/payments/` - **Authenticated** - Add information for daily report.
+
+
+
+
+
+
+
 
 
