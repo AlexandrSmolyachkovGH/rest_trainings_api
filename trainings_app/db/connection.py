@@ -1,5 +1,6 @@
 import asyncio
 import json
+from contextlib import asynccontextmanager
 from typing import Optional, Type, Callable
 
 import asyncpg
@@ -36,6 +37,7 @@ class AsyncpgPool:
         await cls.db_pool.close()
 
 
+@asynccontextmanager
 async def get_conn(pool: Pool = Depends(AsyncpgPool.get_pool)) -> Connection:
     async with pool.acquire() as conn:
         await conn.set_type_codec(
@@ -52,5 +54,3 @@ def get_repo(repo_type: Type[BaseRepository]) -> Callable[[Connection], BaseRepo
         return repo_type(conn=conn)
 
     return inner
-
-

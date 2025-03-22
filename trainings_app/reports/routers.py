@@ -17,8 +17,4 @@ async def create_user(
         data: CreateReport,
         repo: ReportRepository = Depends(get_repo(ReportRepository)),
 ):
-    print("Перед вызовом create:", data.dict())
-    try:
-        return await repo.create(data.dict())
-    except Exception as e:
-        raise e
+    return await repo.create(data.dict())

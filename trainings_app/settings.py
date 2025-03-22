@@ -12,6 +12,8 @@ class Settings(BaseModel):
     POSTGRES_PORT: int
     POSTGRES_HOST: str
     POSTGRES_DB: str
+    # PAYMENT SERVICE
+    PAYMENT_SERVICE_HOST: str
 
     @property
     def postgres_dsn(self):
@@ -26,6 +28,14 @@ class Settings(BaseModel):
                f"{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD.get_secret_value()}" \
                f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/" \
                f"{self.POSTGRES_DB}"
+
+    @property
+    def payment_service_post_url(self):
+        return f"{self.PAYMENT_SERVICE_HOST}/payments/"
+
+    @property
+    def payment_service_pay_page(self):
+        return f"{self.PAYMENT_SERVICE_HOST}/pay-page/"
 
 
 DB_CONFIG = {
@@ -42,6 +52,9 @@ TEST_DB_CONFIG = {
     "POSTGRES_HOST": os.getenv("TEST_POSTGRES_HOST"),
     "POSTGRES_PORT": os.getenv("TEST_POSTGRES_PORT"),
 }
+PAYMENT_SERVICE_CONFIG = {
+    "PAYMENT_SERVICE_HOST": os.getenv("PAYMENT_SERVICE_HOST"),
+}
 
-settings = Settings(**DB_CONFIG)
-settings_test_db = Settings(**TEST_DB_CONFIG)
+settings = Settings(**DB_CONFIG, **PAYMENT_SERVICE_CONFIG)
+settings_test_db = Settings(**TEST_DB_CONFIG, **PAYMENT_SERVICE_CONFIG)

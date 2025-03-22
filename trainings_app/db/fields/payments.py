@@ -6,4 +6,4 @@ class PaymentFields(BaseFields):
 
     @classmethod
     def get_fields_list(cls) -> list[str]:
-        return ['id', 'client_id', 'membership_id', 'payment_status', 'timestamp']
+        return ['client_id', 'membership_id', 'payment_status']

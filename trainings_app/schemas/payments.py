@@ -30,11 +30,6 @@ class CreatePayment(BaseModel):
         description="Current payment status",
         example='PENDING',
     )
-    timestamp: datetime = Field(
-        default_factory=datetime.utcnow,
-        description='Date and time of the payment',
-        example='2025-06-15T14:30:00Z',
-    )
 
 
 class GetPayment(BaseModel):
@@ -48,76 +43,20 @@ class GetPayment(BaseModel):
         description='Client ID associated with the payment',
         example=150,
     )
-    membership_id: int = Field(
+    amount: float = Field(
         gt=0,
-        description="Membership ID associated with the payment",
-        example=5,
+        description='Amount of money for the payment',
+        example=599.99,
     )
-    payment_status: Optional[PaymentStatusEnum] = Field(
-        default=None,
-        description="Current payment status",
-        example='PENDING',
+    subscribe_type: str = Field(
+        description='Type of subscription',
+        example='STANDARD',
+    )
+    status: str = Field(
+        description='Payment status',
+        example='PAID',
     )
     timestamp: datetime = Field(
-        default_factory=datetime.utcnow,
-        description='Date and time of the payment',
-        example='2025-06-15T14:30:00Z',
-    )
-
-
-class UpdatePayment(BaseModel):
-    id: int = Field(
-        gt=0,
-        description='ID of unique payment',
-        example=35,
-    )
-    client_id: int = Field(
-        gt=0,
-        description='Client ID associated with the payment',
-        example=150,
-    )
-    membership_id: int = Field(
-        gt=0,
-        description="Membership ID associated with the payment",
-        example=5,
-    )
-    payment_status: Optional[PaymentStatusEnum] = Field(
-        default=None,
-        description="Current payment status",
-        example='PENDING',
-    )
-    timestamp: datetime = Field(
-        default_factory=datetime.utcnow,
-        description='Date and time of the payment',
-        example='2025-06-15T14:30:00Z',
-    )
-
-
-class FilterPayment(BaseModel):
-    id: Optional[int] = Field(
-        default=None,
-        gt=0,
-        description='ID of unique payment',
-        example=35,
-    )
-    client_id: Optional[int] = Field(
-        default=None,
-        gt=0,
-        description='Client ID associated with the payment',
-        example=150,
-    )
-    membership_id: Optional[int] = Field(
-        default=None,
-        description="Membership ID associated with the payment",
-        example=5,
-    )
-    payment_status: Optional[PaymentStatusEnum] = Field(
-        default=None,
-        description="Current payment status",
-        example='PENDING',
-    )
-    timestamp: Optional[datetime] = Field(
-        default=None,
         description='Date and time of the payment',
         example='2025-06-15T14:30:00Z',
     )

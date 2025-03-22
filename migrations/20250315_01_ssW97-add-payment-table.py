@@ -15,16 +15,5 @@ steps = [
             END $$;
             """,
          "DROP TYPE IF EXISTS payment_status_enum;"
-         ),
-    step("""
-        CREATE TABLE IF NOT EXISTS Payments (
-            id SERIAL PRIMARY KEY,
-            client_id INTEGER NOT NULL,
-            membership_id INTEGER NOT NULL,
-            payment_status payment_status_enum default NULL,
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-        """,
-         "DROP TABLE IF EXISTS Payments;"
          )
 ]

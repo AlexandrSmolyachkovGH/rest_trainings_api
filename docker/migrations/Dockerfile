@@ -22,3 +22,4 @@ RUN chmod +x /trainings_app/scripts/docker/migrate.sh
 RUN chmod +x /trainings_app/scripts/docker/wait_for_postgres.sh
 
 RUN echo MIGRATIONS BUILD SUCCESS
+ENTRYPOINT ["sh", "/trainings_app/scripts/docker/migrate.sh"]
