@@ -3,12 +3,12 @@ import httpx
 from datetime import timedelta, datetime, timezone
 from celery import Celery, schedules
 
-from trainings_app.reports.settings import conf_url
+from trainings_app.settings import settings
 
 
 app = Celery(
     'generate_report',
-    broker=conf_url,
+    broker=settings.rabbitmq_dsn,
     backend=None,
 )
 
@@ -46,6 +46,6 @@ app.conf.beat_schedule = {
     "simple_report": {
         "task": 'trainings_app.reports.celery_app.create_simple_report',
         # "schedule": schedules.timedelta(seconds=30),
-        "schedule": schedules.crontab(hour=8, minute=0),
+        "schedule": schedules.crontab(hour='8', minute='0'),
     },
 }

@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from celery import Celery, schedules
 
 from trainings_app.db.connection import AsyncpgPool
-from trainings_app.reports.settings import conf_url
+from trainings_app.settings import settings
 from trainings_app.schemas.clients import ClientStatusEnum as Statuses
 
 
@@ -25,7 +25,7 @@ async def get_conn():
 
 app = Celery(
     'check_membership_status',
-    broker=conf_url,
+    broker=settings.rabbitmq_dsn,
     backend=None,
 )
 
@@ -46,7 +46,6 @@ async def _check_membership_status():
         """
 
         client_ids = await conn.fetch(update_query, Statuses.INACTIVE, Statuses.ACTIVE, today_utc)
-        print(f"Num of updated statuses: {len(client_ids or [])}")
         return client_ids
 
 
@@ -54,6 +53,7 @@ app.conf.broker_connection_retry_on_startup = True
 app.conf.beat_schedule = {
     "check_membership": {
         "task": 'trainings_app.check_membership.check_membership_status',
-        "schedule": schedules.crontab(hour='3', minute='0'),
+        "schedule": schedules.timedelta(seconds=30),
+        # "schedule": schedules.crontab(hour='3', minute='0'),
     },
 }
