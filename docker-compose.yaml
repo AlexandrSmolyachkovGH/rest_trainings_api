@@ -100,6 +100,8 @@ services:
     depends_on:
       - rabbitmq
       - app
+    networks:
+      - app_network
 
   beat_report:
     image: trainings-base
@@ -116,6 +118,8 @@ services:
     depends_on:
       - rabbitmq
       - app
+    networks:
+      - app_network
 
   worker_check_membership:
     image: trainings-base
@@ -132,6 +136,8 @@ services:
     depends_on:
       - rabbitmq
       - app
+    networks:
+      - app_network
 
   beat_check_membership:
     image: trainings-base
@@ -148,6 +154,8 @@ services:
     depends_on:
       - rabbitmq
       - app
+    networks:
+      - app_network
 
 volumes:
   postgres_data:

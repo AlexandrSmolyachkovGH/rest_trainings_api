@@ -1,5 +1,3 @@
-import dotenv
-import os
 import httpx
 from pydantic import ValidationError
 
@@ -9,8 +7,6 @@ from trainings_app.schemas.payments import GetPayment, GetExtendedPaymentModel
 from trainings_app.custom_loggers.repositories import repo_logger
 from trainings_app.exceptions.exceptions import ConvertRecordError
 from trainings_app.settings import settings
-
-dotenv.load_dotenv()
 
 
 class PaymentRepository(BaseRepository):

@@ -54,15 +54,8 @@ async def get_new_users_for_report(
         filter_model: DateFilterUser = Depends(),
         user_repo: UserRepository = Depends(get_repo(UserRepository)),
 ):
-    if filter_model.from_date > filter_model.to_date:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='Invalid filter params',
-        )
-
-    else:
-        filter_dict = filter_model.model_dump()
-        return await user_repo.get_new_users_for_report(filter_dict)
+    filter_dict = filter_model.model_dump()
+    return await user_repo.get_new_users_for_report(filter_dict)
 
 
 @router.post(

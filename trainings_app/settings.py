@@ -16,10 +16,10 @@ class Settings(BaseModel):
     # PAYMENT SERVICE
     PAYMENT_SERVICE_HOST: str
     # RABBIT MQ
-    RABBITMQ_DEFAULT_VHOST: str
-    RABBITMQ_DEFAULT_USER: str
-    RABBITMQ_DEFAULT_PASS: str
-    RABBITMQ_HOST: str
+    RABBIT_VHOST: str
+    RABBIT_USER: str
+    RABBIT_PASS: str
+    RABBIT_HOST: str
 
     @property
     def postgres_dsn(self):
@@ -61,10 +61,10 @@ PAYMENT_SERVICE_CONFIG = {
     "PAYMENT_SERVICE_HOST": os.getenv("PAYMENT_SERVICE_HOST"),
 }
 RABBITMQ_CONF = {
-    'VHOST': os.getenv('RABBITMQ_DEFAULT_VHOST', '/'),
-    'USER': os.getenv('RABBITMQ_DEFAULT_USER', 'guest'),
-    'PASS': os.getenv('RABBITMQ_DEFAULT_PASS', 'guest'),
-    'HOST': os.getenv('RABBITMQ_HOST', 'localhost'),
+    'RABBIT_VHOST': os.getenv('RABBITMQ_DEFAULT_VHOST', '/'),
+    'RABBIT_USER': os.getenv('RABBITMQ_DEFAULT_USER', 'guest'),
+    'RABBIT_PASS': os.getenv('RABBITMQ_DEFAULT_PASS', 'guest'),
+    'RABBIT_HOST': os.getenv('RABBITMQ_HOST', 'localhost'),
 }
 
 settings = Settings(**DB_CONFIG, **PAYMENT_SERVICE_CONFIG, **RABBITMQ_CONF)

@@ -3,6 +3,7 @@ from typing import Optional
 from datetime import datetime
 from pydantic import ValidationError
 
+from trainings_app.custom_loggers.console_debug import console_logger
 from trainings_app.db.fields.users import UserFields
 from trainings_app.schemas.users import GetUser
 from trainings_app.repositories.base import BaseRepository
@@ -82,7 +83,7 @@ class UserRepository(BaseRepository):
         try:
             user_records = await self.conn.fetch(query, *filters.values())
         except Exception as e:
-            raise f"{e}"
+            console_logger.info(f"{e}")
         user_records_list = [GetUser(**record) for record in user_records]
         return user_records_list
 

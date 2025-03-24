@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field, EmailStr, field_validator
 from datetime import datetime, date
 from enum import Enum
 
@@ -233,3 +233,11 @@ class FilterUser(BaseModel):
 class DateFilterUser(BaseModel):
     from_date: date
     to_date: date
+
+    @field_validator("to_date")
+    @classmethod
+    def check_dates(cls, to_date, values):
+        from_date = values.get("from_date")
+        if from_date >= to_date:
+            raise ValueError("from_date must be less then to_date")
+        return to_date
