@@ -1,6 +1,6 @@
 services:
   test_db:
-    container_name: 'test_trainings_db'
+    container_name: 'pytest_trainings_db'
     image: postgres:16.4
     restart: always
     environment:
@@ -17,19 +17,24 @@ services:
       timeout: 5s
       retries: 5
 
-  pytest_run:
-    container_name: 'pytest_run_container'
-    image: python:3.10
+  test_app:
+    container_name: 'pytest_trainings_app'
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
     depends_on:
       test_db:
         condition: service_healthy
-    command: >
-      bash -c "sleep 15 && pip install poetry && poetry install
-      && pytest -k 'tests/repositories/test_clients.py' 
-      && pytest -k 'tests/repositories/test_memberships.py' 
-      && pytest -k 'tests/repositories/test_clients.py'"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: "postgresql://test_db_user:test_db_password@test_trainings_db:5432/test_db"
     networks:
       - test_network
+    command: >
+      bash -c "
+      poetry install &&
+      poetry run pytest"
 
 networks:
   test_network:

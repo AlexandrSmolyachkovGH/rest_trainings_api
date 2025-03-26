@@ -2,8 +2,13 @@ import unittest
 from datetime import date
 from pydantic import ValidationError
 
-from trainings_app.schemas.clients import CreateClient, GetClient, PutClient, PatchClient, ClientFilters, GenderEnum, \
-    ClientStatusEnum
+from trainings_app.schemas.clients import (
+    CreateClient,
+    GetClient,
+    PutClient,
+    GenderEnum,
+    ClientStatusEnum,
+)
 
 
 class TestClientSchemas(unittest.IsolatedAsyncioTestCase):
@@ -25,7 +30,8 @@ class TestClientSchemas(unittest.IsolatedAsyncioTestCase):
                 "date_of_birth": date(1990, 5, 20),
                 "weight_kg": 70.5,
                 "height_cm": 175.2,
-                "status": ClientStatusEnum.ACTIVE,
+                "status": ClientStatusEnum.INACTIVE,
+                "expiration_date": "2024-12-25 00:00:00",
             }
             if schema_name != "CreateClient":
                 client_data['id'] = 10
@@ -33,7 +39,7 @@ class TestClientSchemas(unittest.IsolatedAsyncioTestCase):
                 client_data.pop('gender', GenderEnum.MALE)
             client = schema(**client_data)
             self.assertEqual(client.first_name, "John")
-            self.assertEqual(client.status, ClientStatusEnum.ACTIVE)
+            self.assertEqual(client.status, ClientStatusEnum.INACTIVE)
             if hasattr(client_data, 'gender'):
                 self.assertEqual(client.gender, GenderEnum.MALE)
             self.assertTrue(
@@ -73,7 +79,3 @@ class TestClientSchemas(unittest.IsolatedAsyncioTestCase):
                 height_cm=175.2,
                 status="INVALID STATUS"
             )
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -12,4 +12,4 @@ trainings_app/auth/utils/test.py
 *.dir
 *.bak
 *.dat
-
+*.log
