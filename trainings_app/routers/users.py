@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Path, status, HTTPException
 
 from trainings_app.auth.utils.jwt_utils import get_current_auth_user_with_role
 from trainings_app.schemas.users import GetUser, CreateUser, PutUser, PatchUser, FilterUser, stuffer_roles, \
-    client_roles, RoleEnum
+    client_roles, RoleEnum, DateFilterUser
 from trainings_app.db.connection import get_repo
 from trainings_app.repositories.users import UserRepository
 
@@ -42,6 +42,20 @@ async def get_user(
             detail='No access to the specified user',
         )
     return await user_repo.get(user_id)
+
+
+@router.get(
+    path='/for-report/',
+    response_model=list[GetUser],
+    description="Retrieve list of users for a report",
+    status_code=status.HTTP_200_OK,
+)
+async def get_new_users_for_report(
+        filter_model: DateFilterUser = Depends(),
+        user_repo: UserRepository = Depends(get_repo(UserRepository)),
+):
+    filter_dict = filter_model.model_dump()
+    return await user_repo.get_new_users_for_report(filter_dict)
 
 
 @router.post(

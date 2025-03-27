@@ -1,6 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel, Field
-from datetime import date
+from datetime import date, datetime
 from enum import Enum
 
 
@@ -69,9 +69,14 @@ class CreateClient(BaseModel):
         example=175.2,
     )
     status: ClientStatusEnum = Field(
-        default=ClientStatusEnum.ACTIVE,
+        default=ClientStatusEnum.INACTIVE,
         description="Client activity status",
-        example='INACTIVE',
+        example='ACTIVE',
+    )
+    expiration_date: Optional[datetime] = Field(
+        default=None,
+        description="Expiration date of the membership.",
+        example='2024-12-25 00:00:00',
     )
 
 
@@ -125,6 +130,11 @@ class CreateClientByUser(BaseModel):
         default=ClientStatusEnum.ACTIVE,
         description="Client activity status",
         example='INACTIVE',
+    )
+    expiration_date: Optional[datetime] = Field(
+        default=None,
+        description="Expiration date of the membership.",
+        example='2024-12-25 00:00:00',
     )
 
 
@@ -185,6 +195,10 @@ class GetClient(BaseModel):
         description="Client activity status",
         example='INACTIVE',
     )
+    expiration_date: Optional[datetime] = Field(
+        description="Expiration date of the membership.",
+        example='2024-12-25 00:00:00',
+    )
 
 
 class PutClient(BaseModel):
@@ -229,6 +243,10 @@ class PutClient(BaseModel):
         default=ClientStatusEnum.ACTIVE,
         description="Client activity status",
         example='INACTIVE',
+    )
+    expiration_date: Optional[datetime] = Field(
+        description="Expiration date of the membership.",
+        example='2024-12-25 00:00:00',
     )
 
 
@@ -283,6 +301,11 @@ class PatchClient(BaseModel):
         default=None,
         description="Client activity status",
         example='INACTIVE',
+    )
+    expiration_date: Optional[datetime] = Field(
+        default=None,
+        description="Expiration date of the membership.",
+        example='2024-12-25 00:00:00',
     )
 
 
@@ -353,4 +376,9 @@ class ClientFilters(BaseModel):
         default=None,
         description="Client activity status",
         example='INACTIVE',
+    )
+    expiration_date: Optional[datetime] = Field(
+        default=None,
+        description="Expiration date of the membership.",
+        example='2024-12-25 00:00:00',
     )

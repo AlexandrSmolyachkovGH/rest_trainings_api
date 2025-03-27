@@ -147,7 +147,8 @@ steps = [
             date_of_birth DATE NOT NULL,
             weight_kg NUMERIC(5, 2) DEFAULT NULL,
             height_cm NUMERIC(5, 2) DEFAULT NULL,
-            status client_activity_status_enum DEFAULT 'ACTIVE'
+            status client_activity_status_enum DEFAULT 'INACTIVE',
+            expiration_date TIMESTAMP DEFAULT NULL
         );
         """,
          "DROP TABLE IF EXISTS Clients;"

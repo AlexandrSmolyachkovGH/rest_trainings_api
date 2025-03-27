@@ -14,7 +14,7 @@ services:
     networks:
       - app_network
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}"]
+      test: [ "CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -42,7 +42,7 @@ services:
         condition: service_healthy
     env_file:
       - .env
-    command: ["sh", "/trainings_app/scripts/docker/migrate.sh"]
+    command: [ "sh", "/trainings_app/scripts/docker/migrate.sh" ]
     volumes:
       - .:/trainings_app
     networks:
@@ -56,6 +56,7 @@ services:
       context: .
     depends_on:
       - migrations
+    image: trainings-base
     env_file:
       - .env
     ports:
@@ -69,6 +70,92 @@ services:
     networks:
       - app_network
     restart: always
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_DEFAULT_VHOST}
+    networks:
+      - app_network
+
+  worker_report:
+    image: trainings-base
+    volumes:
+      - .:/trainings_app
+    env_file:
+      - .env
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+    command: >
+      /trainings_app/scripts/celery/wait_for_rabbitmq.sh &&
+      python /trainings_app/trainings_app/reports/run_worker.py
+    depends_on:
+      - rabbitmq
+      - app
+    networks:
+      - app_network
+
+  beat_report:
+    image: trainings-base
+    volumes:
+      - .:/trainings_app
+    env_file:
+      - .env
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+    command: >
+      /trainings_app/scripts/celery/wait_for_rabbitmq.sh &&
+      python /trainings_app/trainings_app/reports/run_beat.py
+    depends_on:
+      - rabbitmq
+      - app
+    networks:
+      - app_network
+
+  worker_check_membership:
+    image: trainings-base
+    volumes:
+      - .:/trainings_app
+    env_file:
+      - .env
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+    command: >
+      /trainings_app/scripts/celery/wait_for_rabbitmq.sh &&
+      python /trainings_app/trainings_app/check_membership/run_worker.py
+    depends_on:
+      - rabbitmq
+      - app
+    networks:
+      - app_network
+
+  beat_check_membership:
+    image: trainings-base
+    volumes:
+      - .:/trainings_app
+    env_file:
+      - .env
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+    command: >
+      /trainings_app/scripts/celery/wait_for_rabbitmq.sh &&
+      python /trainings_app/trainings_app/check_membership/run_beat.py
+    depends_on:
+      - rabbitmq
+      - app
+    networks:
+      - app_network
 
 volumes:
   postgres_data:

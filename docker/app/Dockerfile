@@ -5,8 +5,6 @@ WORKDIR /trainings_app
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-COPY ./pyproject.toml ./poetry.lock ./
-
 RUN apt-get update && apt-get install -y --no-install-recommends \
     postgresql-client libpq-dev build-essential curl netcat-openbsd && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -14,8 +12,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN curl -sSL https://install.python-poetry.org | python3 - && \
     ln -s /root/.local/bin/poetry /usr/local/bin/poetry
 
-RUN poetry config virtualenvs.create false && \
-    poetry install --no-interaction --no-ansi --only main
+RUN poetry config virtualenvs.create false
+COPY ./pyproject.toml ./poetry.lock ./
+RUN poetry install --no-root --no-interaction --no-ansi
+
 
 COPY . .
 

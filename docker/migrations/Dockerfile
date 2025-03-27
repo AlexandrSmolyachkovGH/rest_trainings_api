@@ -12,10 +12,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN curl -sSL https://install.python-poetry.org | python3 - && \
     ln -s /root/.local/bin/poetry /usr/local/bin/poetry
 
+RUN poetry config virtualenvs.create false
 COPY ./pyproject.toml ./poetry.lock ./
-
-RUN poetry config virtualenvs.create false && \
-    poetry install --no-interaction --no-ansi --only main
+RUN poetry install --no-root --no-interaction --no-ansi
 
 COPY . .
 
@@ -23,3 +22,4 @@ RUN chmod +x /trainings_app/scripts/docker/migrate.sh
 RUN chmod +x /trainings_app/scripts/docker/wait_for_postgres.sh
 
 RUN echo MIGRATIONS BUILD SUCCESS
+ENTRYPOINT ["sh", "/trainings_app/scripts/docker/migrate.sh"]
