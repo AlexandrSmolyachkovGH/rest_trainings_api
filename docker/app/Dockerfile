@@ -2,8 +2,8 @@ FROM python:3.10
 
 WORKDIR /trainings_app
 
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     postgresql-client libpq-dev build-essential curl netcat-openbsd && \

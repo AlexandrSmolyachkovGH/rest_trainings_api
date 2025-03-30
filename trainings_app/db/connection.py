@@ -1,5 +1,4 @@
 import json
-from contextlib import asynccontextmanager
 from typing import Optional, Type, Callable
 
 import asyncpg
@@ -7,9 +6,9 @@ from asyncpg import Pool, Connection
 from fastapi import Depends
 
 from trainings_app.custom_loggers.main import main_logger
-from trainings_app.settings import settings
-from trainings_app.repositories.base import BaseRepository
 from trainings_app.exceptions.exceptions import UninitializedDatabasePoolError
+from trainings_app.repositories.base import BaseRepository
+from trainings_app.settings import settings
 
 
 class AsyncpgPool:
@@ -36,7 +35,7 @@ class AsyncpgPool:
         await cls.db_pool.close()
 
 
-@asynccontextmanager
+# @asynccontextmanager
 async def get_conn(pool: Pool = Depends(AsyncpgPool.get_pool)) -> Connection:
     async with pool.acquire() as conn:
         await conn.set_type_codec(

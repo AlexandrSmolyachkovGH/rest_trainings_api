@@ -87,8 +87,6 @@ services:
 
   worker_report:
     image: trainings-base
-    volumes:
-      - .:/trainings_app
     env_file:
       - .env
     environment:
@@ -105,8 +103,6 @@ services:
 
   beat_report:
     image: trainings-base
-    volumes:
-      - .:/trainings_app
     env_file:
       - .env
     environment:
@@ -123,8 +119,6 @@ services:
 
   worker_check_membership:
     image: trainings-base
-    volumes:
-      - .:/trainings_app
     env_file:
       - .env
     environment:
@@ -141,8 +135,6 @@ services:
 
   beat_check_membership:
     image: trainings-base
-    volumes:
-      - .:/trainings_app
     env_file:
       - .env
     environment:

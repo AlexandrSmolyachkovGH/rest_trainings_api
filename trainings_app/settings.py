@@ -49,7 +49,7 @@ class Settings(BaseModel):
 
     @property
     def rabbitmq_payment_dsn(self):
-        return f"pyamqp://" \
+        return f"amqp://" \
                f"{self.PAY_RABBIT_USER}:{self.PAY_RABBIT_PASSWORD.get_secret_value()}@" \
                f"{self.PAY_RABBIT_HOST}/{self.PAY_RABBIT_PORT}"
 
